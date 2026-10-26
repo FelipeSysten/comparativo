@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comparativo de Prescritores</title>
+<link rel="icon" type="image/png" href="assets/logo-white.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="./config.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<style>
+body{margin:0;background:#F0EFED;color:#0D0D0D;font-family:'Outfit',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#E85D04}a:hover{color:#9C2704}
+*{box-sizing:border-box}
+</style>
+</helmet>
+<div>
+<sc-if value="{{ showBoot }}" hint-placeholder-val="{{ false }}">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:#8A8A8A;font-size:15px">Carregando…</div>
+</sc-if>
+
+<sc-if value="{{ showAuth }}" hint-placeholder-val="{{ false }}">
+  <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;gap:28px;background:#0D0D0D">
+    <img src="assets/logo-white.png" alt="Liipedesigner" style="height:64px;width:auto;display:block">
+    <div style="width:100%;max-width:400px;background:#fff;border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.3);padding:32px;display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#E85D04">Comparativo de Prescritores</div>
+        <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:24px">{{ authTitle }}</div>
+        <div style="font-size:14px;color:#2A2A2A;text-wrap:pretty">{{ authSubtitle }}</div>
+      </div>
+
+      <sc-if value="{{ noConfig }}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius:8px;background:rgba(220,38,38,0.08);color:#DC2626;padding:12px 14px;font-size:14px">Preencha SUPABASE_URL e SUPABASE_ANON_KEY no arquivo config.js.</div>
+      </sc-if>
+
+      <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+        <form onSubmit="{{ onLogin }}" style="display:flex;flex-direction:column;gap:14px">
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#2A2A2A">E-mail
+            <input type="email" name="email" required="{{ true }}" value="{{ email }}" onChange="{{ onEmail }}" style="height:44px;padding:0 14px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:500 15px 'Outfit',sans-serif;outline:none" style-focus="border-color:#E85D04">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#2A2A2A">Senha
+            <input type="password" name="password" required="{{ true }}" value="{{ password }}" onChange="{{ onPassword }}" style="height:44px;padding:0 14px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:500 15px 'Outfit',sans-serif;outline:none" style-focus="border-color:#E85D04">
+          </label>
+          <button type="submit" disabled="{{ busy }}" style="height:46px;border-radius:999px;border:none;background:#E85D04;color:#fff;font:700 15px 'Outfit',sans-serif;cursor:pointer" style-hover="background:#F48C06">{{ loginLabel }}</button>
+          <button type="button" onClick="{{ goForgot }}" style="all:unset;cursor:pointer;font-size:13px;color:#8A8A8A;text-align:center" style-hover="color:#E85D04">Esqueci minha senha</button>
+        </form>
+      </sc-if>
+
+      <sc-if value="{{ isForgot }}" hint-placeholder-val="{{ false }}">
+        <form onSubmit="{{ onForgot }}" style="display:flex;flex-direction:column;gap:14px">
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#2A2A2A">E-mail
+            <input type="email" name="email" required="{{ true }}" value="{{ email }}" onChange="{{ onEmail }}" style="height:44px;padding:0 14px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:500 15px 'Outfit',sans-serif;outline:none" style-focus="border-color:#E85D04">
+          </label>
+          <button type="submit" disabled="{{ busy }}" style="height:46px;border-radius:999px;border:none;background:#E85D04;color:#fff;font:700 15px 'Outfit',sans-serif;cursor:pointer" style-hover="background:#F48C06">Enviar link</button>
+          <button type="button" onClick="{{ goLogin }}" style="all:unset;cursor:pointer;font-size:13px;color:#8A8A8A;text-align:center" style-hover="color:#E85D04">Voltar ao login</button>
+        </form>
+      </sc-if>
+
+      <sc-if value="{{ isSetPw }}" hint-placeholder-val="{{ false }}">
+        <form onSubmit="{{ onSetPw }}" style="display:flex;flex-direction:column;gap:14px">
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#2A2A2A">Nova senha
+            <input type="password" name="new-password" required="{{ true }}" value="{{ password }}" onChange="{{ onPassword }}" style="height:44px;padding:0 14px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:500 15px 'Outfit',sans-serif;outline:none" style-focus="border-color:#E85D04">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#2A2A2A">Confirme a senha
+            <input type="password" name="confirm-password" required="{{ true }}" value="{{ password2 }}" onChange="{{ onPassword2 }}" style="height:44px;padding:0 14px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:500 15px 'Outfit',sans-serif;outline:none" style-focus="border-color:#E85D04">
+          </label>
+          <button type="submit" disabled="{{ busy }}" style="height:46px;border-radius:999px;border:none;background:#E85D04;color:#fff;font:700 15px 'Outfit',sans-serif;cursor:pointer" style-hover="background:#F48C06">Salvar senha</button>
+        </form>
+      </sc-if>
+
+      <sc-if value="{{ hasAuthMsg }}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius:8px;padding:12px 14px;font-size:14px;color:{{ authMsgColor }};background:{{ authMsgBg }}">{{ authMsg }}</div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ showApp }}" hint-placeholder-val="{{ true }}">
+<div style="min-height:100vh;display:flex;flex-direction:column">
+  <header style="background:#0D0D0D;color:#fff">
+    <div style="max-width:1320px;margin:0 auto;padding:20px 32px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+      <img src="assets/logo-white.png" alt="Liipedesigner" style="height:40px;width:auto;display:block">
+      <div style="width:1px;height:32px;background:rgba(255,255,255,0.14)"></div>
+      <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:220px">
+        <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:22px;letter-spacing:-0.01em">Comparativo de Prescritores</div>
+        <div style="font-size:13px;color:#8A8A8A">Orçamentos por prescritor · ano base × ano atual</div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;margin-right:4px">
+          <span style="font-size:13px;color:#C8C8C8">{{ userEmail }}</span>
+          <button onClick="{{ signOut }}" style="all:unset;cursor:pointer;font-size:12px;font-weight:600;color:#8A8A8A" style-hover="color:#F48C06">Sair</button>
+        </div>
+        <button onClick="{{ exportCsv }}" style="height:44px;padding:0 20px;border-radius:999px;border:1px solid rgba(255,255,255,0.18);background:transparent;color:#fff;font:600 14px 'Outfit',sans-serif;cursor:pointer" style-hover="border-color:#fff">Exportar CSV</button>
+        <button onClick="{{ openPicker }}" style="height:44px;padding:0 22px;border-radius:999px;border:none;background:#E85D04;color:#fff;font:700 14px 'Outfit',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:transform 150ms cubic-bezier(0.4,0,0.2,1)" style-hover="background:#F48C06;transform:scale(1.03)" style-active="background:#9C2704;transform:scale(0.97)"><span style="font-size:18px;line-height:1">+</span> Enviar planilha</button>
+      </div>
+    </div>
+  </header>
+  <input type="file" ref="{{ fileRef }}" onChange="{{ onFileInput }}" accept=".xlsx,.xls" multiple="{{ true }}" style="display:none">
+
+  <main style="max-width:1320px;width:100%;margin:0 auto;padding:40px 32px 96px;display:flex;flex-direction:column;gap:40px">
+
+    <section onDragOver="{{ onDragOver }}" onDragLeave="{{ onDragLeave }}" onDrop="{{ onDrop }}" style="position:relative;background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 24px rgba(0,0,0,0.08);padding:28px;display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#E85D04">01 · Meses carregados</div>
+          <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:24px">Planilhas por mês</div>
+          <div style="font-size:14px;color:#2A2A2A;max-width:560px;text-wrap:pretty">Arraste arquivos .xlsx aqui ou clique num mês vazio para enviar. Abas nomeadas como SET-25, OUT-26 são reconhecidas automaticamente.</div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+          <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#8A8A8A;font-weight:600">Ano base
+            <select value="{{ anoBase }}" onChange="{{ onAnoBase }}" style="height:40px;padding:0 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:600 15px 'Outfit',sans-serif;background:#fff;color:#0D0D0D">
+              <sc-for list="{{ yearOptions }}" as="y" hint-placeholder-count="5"><option value="{{ y }}">{{ y }}</option></sc-for>
+            </select>
+          </label>
+          <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:20px;color:#8A8A8A;padding-top:16px">→</div>
+          <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#8A8A8A;font-weight:600">Ano atual
+            <select value="{{ anoAtual }}" onChange="{{ onAnoAtual }}" style="height:40px;padding:0 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:600 15px 'Outfit',sans-serif;background:#fff;color:#0D0D0D">
+              <sc-for list="{{ yearOptions }}" as="y" hint-placeholder-count="5"><option value="{{ y }}">{{ y }}</option></sc-for>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto">
+        <div style="min-width:960px;display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ yearRows }}" as="yr" hint-placeholder-count="2">
+            <div style="display:grid;grid-template-columns:96px repeat(12,minmax(0,1fr));gap:8px;align-items:stretch">
+              <div style="display:flex;flex-direction:column;justify-content:center;gap:2px">
+                <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:22px">{{ yr.year }}</div>
+                <div style="font-size:12px;color:#8A8A8A">{{ yr.label }} · {{ yr.count }}/12</div>
+              </div>
+              <sc-for list="{{ yr.cells }}" as="c" hint-placeholder-count="12">
+                <sc-if value="{{ c.loaded }}" hint-placeholder-val="{{ false }}">
+                  <div title="{{ c.title }}" style="position:relative;height:84px;border-radius:12px;background:#0D0D0D;color:#fff;padding:10px 10px;display:flex;flex-direction:column;justify-content:space-between">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <span style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#F48C06">{{ c.label }}</span>
+                      <button onClick="{{ c.onRemove }}" title="Remover mês" style="width:22px;height:22px;border-radius:999px;border:none;background:rgba(255,255,255,0.08);color:#C8C8C8;font-size:13px;line-height:1;cursor:pointer;padding:0" style-hover="background:#DC2626;color:#fff">×</button>
+                    </div>
+                    <div style="display:flex;flex-direction:column">
+                      <span style="font-family:'Nunito',sans-serif;font-weight:900;font-size:20px;line-height:1">{{ c.total }}</span>
+                      <span style="font-size:11px;color:#8A8A8A">{{ c.prescr }} prescr.</span>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ c.missing }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ c.onAdd }}" style="height:84px;border-radius:12px;border:1.5px dashed rgba(0,0,0,0.16);background:transparent;color:#8A8A8A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font:600 11px 'Outfit',sans-serif;letter-spacing:0.1em;text-transform:uppercase;transition:all 150ms cubic-bezier(0.4,0,0.2,1)" style-hover="border-color:#E85D04;color:#E85D04;background:rgba(232,93,4,0.06)">
+                    <span style="font-size:20px;line-height:1;font-weight:500">+</span>
+                    <span>{{ c.label }}</span>
+                  </button>
+                </sc-if>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <sc-if value="{{ hasPending }}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius:12px;background:rgba(232,93,4,0.08);padding:16px 20px;display:flex;flex-direction:column;gap:12px">
+          <div style="font-weight:700;font-size:14px">Abas sem mês identificado — informe o período</div>
+          <sc-for list="{{ pendingView }}" as="p" hint-placeholder-count="1">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border-radius:8px;padding:10px 14px">
+              <div style="flex:1;min-width:200px;display:flex;flex-direction:column">
+                <span style="font-weight:600;font-size:14px">{{ p.sheet }}</span>
+                <span style="font-size:12px;color:#8A8A8A">{{ p.file }} · {{ p.n }} prescritores</span>
+              </div>
+              <select value="{{ p.month }}" onChange="{{ p.onMonth }}" style="height:36px;padding:0 10px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:500 14px 'Outfit',sans-serif;background:#fff">
+                <option value="">Mês…</option>
+                <sc-for list="{{ monthOptions }}" as="m" hint-placeholder-count="12"><option value="{{ m.v }}">{{ m.label }}</option></sc-for>
+              </select>
+              <select value="{{ p.year }}" onChange="{{ p.onYear }}" style="height:36px;padding:0 10px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:500 14px 'Outfit',sans-serif;background:#fff">
+                <sc-for list="{{ yearOptions }}" as="y" hint-placeholder-count="5"><option value="{{ y }}">{{ y }}</option></sc-for>
+              </select>
+              <button onClick="{{ p.onConfirm }}" style="height:36px;padding:0 16px;border-radius:999px;border:none;background:#0D0D0D;color:#fff;font:600 13px 'Outfit',sans-serif;cursor:pointer" style-hover="background:#E85D04">Adicionar</button>
+              <button onClick="{{ p.onDiscard }}" style="height:36px;padding:0 12px;border-radius:999px;border:none;background:transparent;color:#8A8A8A;font:600 13px 'Outfit',sans-serif;cursor:pointer" style-hover="color:#DC2626">Descartar</button>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ drag }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;border-radius:16px;border:2px dashed #E85D04;background:rgba(255,255,255,0.92);display:flex;align-items:center;justify-content:center;pointer-events:none">
+          <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:24px;color:#E85D04">Solte os arquivos .xlsx</div>
+        </div>
+      </sc-if>
+    </section>
+
+    <section style="display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#E85D04">02 · Comparação</div>
+          <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:32px;letter-spacing:-0.01em;line-height:1.1">{{ periodTitle }}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
+          <span style="font-size:12px;color:#8A8A8A;font-weight:600">Meses no período</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <sc-for list="{{ monthChips }}" as="mc" hint-placeholder-count="12">
+              <sc-if value="{{ mc.on }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ mc.onToggle }}" style="height:32px;min-width:44px;padding:0 10px;border-radius:8px;border:none;background:#E85D04;color:#fff;font:700 12px 'Outfit',sans-serif;cursor:pointer">{{ mc.label }}</button>
+              </sc-if>
+              <sc-if value="{{ mc.off }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ mc.onToggle }}" style="height:32px;min-width:44px;padding:0 10px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);background:#fff;color:#0D0D0D;font:600 12px 'Outfit',sans-serif;cursor:pointer" style-hover="border-color:#E85D04">{{ mc.label }}</button>
+              </sc-if>
+              <sc-if value="{{ mc.disabled }}" hint-placeholder-val="{{ true }}">
+                <span title="{{ mc.title }}" style="height:32px;min-width:44px;padding:0 10px;border-radius:8px;border:1px dashed rgba(0,0,0,0.12);color:#C8C8C8;font:600 12px 'Outfit',sans-serif;display:flex;align-items:center;justify-content:center">{{ mc.label }}</span>
+              </sc-if>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <sc-if value="{{ noPeriod }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff;border-radius:16px;padding:48px 24px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center">
+          <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:22px">{{ emptyTitle }}</div>
+          <div style="font-size:15px;color:#2A2A2A;max-width:440px;text-wrap:pretty">{{ emptyText }}</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ hasPeriod }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 24px rgba(0,0,0,0.06);padding:24px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                <span style="font-size:13px;font-weight:600;color:#2A2A2A">{{ k.label }}</span>
+                <span style="font-size:13px;font-weight:700;padding:4px 8px;border-radius:8px;color:{{ k.color }};background:{{ k.bg }}">{{ k.delta }}</span>
+              </div>
+              <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:40px;line-height:1;letter-spacing:-0.02em">{{ k.atual }}</div>
+              <div style="font-size:13px;color:#8A8A8A">{{ k.base }} em {{ anoBase }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 24px rgba(0,0,0,0.06);overflow:hidden">
+          <div style="padding:20px 24px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid rgba(0,0,0,0.08)">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <sc-for list="{{ filterTabs }}" as="f" hint-placeholder-count="5">
+                <sc-if value="{{ f.active }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ f.onClick }}" style="height:36px;padding:0 14px;border-radius:999px;border:none;background:#0D0D0D;color:#fff;font:600 13px 'Outfit',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px">{{ f.label }}<span style="font-size:12px;color:#F48C06">{{ f.count }}</span></button>
+                </sc-if>
+                <sc-if value="{{ f.inactive }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ f.onClick }}" style="height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(0,0,0,0.12);background:#fff;color:#0D0D0D;font:600 13px 'Outfit',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="border-color:#0D0D0D">{{ f.label }}<span style="font-size:12px;color:#8A8A8A">{{ f.count }}</span></button>
+                </sc-if>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+              <div style="display:flex;background:#F0EFED;border-radius:999px;padding:3px">
+                <sc-for list="{{ metrics }}" as="m" hint-placeholder-count="4">
+                  <sc-if value="{{ m.active }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ m.onClick }}" style="height:30px;padding:0 12px;border-radius:999px;border:none;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,0.12);color:#0D0D0D;font:700 12px 'Outfit',sans-serif;cursor:pointer">{{ m.label }}</button>
+                  </sc-if>
+                  <sc-if value="{{ m.inactive }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ m.onClick }}" style="height:30px;padding:0 12px;border-radius:999px;border:none;background:transparent;color:#2A2A2A;font:600 12px 'Outfit',sans-serif;cursor:pointer">{{ m.label }}</button>
+                  </sc-if>
+                </sc-for>
+              </div>
+              <input value="{{ q }}" onChange="{{ onSearch }}" placeholder="Buscar nome ou CRM" style="height:36px;width:220px;padding:0 14px;border-radius:999px;border:1px solid rgba(0,0,0,0.16);font:500 14px 'Outfit',sans-serif;outline:none" style-focus="border-color:#E85D04">
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#2A2A2A;cursor:pointer">
+                <input type="checkbox" checked="{{ excluir }}" onChange="{{ onToggleExcl }}" style="accent-color:#E85D04;width:16px;height:16px">
+                Ignorar "sem prescritor"
+              </label>
+            </div>
+          </div>
+
+          <div style="overflow-x:auto">
+            <div style="min-width:880px">
+              <div style="display:grid;grid-template-columns:150px minmax(200px,1.6fr) 100px 100px 100px 96px 180px;gap:12px;padding:12px 24px;background:#F0EFED;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#2A2A2A">
+                <button onClick="{{ sortBy.crm }}" style="all:unset;cursor:pointer">CRM {{ arrows.crm }}</button>
+                <button onClick="{{ sortBy.nome }}" style="all:unset;cursor:pointer">Prescritor {{ arrows.nome }}</button>
+                <button onClick="{{ sortBy.base }}" style="all:unset;cursor:pointer;text-align:right">{{ anoBase }} {{ arrows.base }}</button>
+                <button onClick="{{ sortBy.atual }}" style="all:unset;cursor:pointer;text-align:right">{{ anoAtual }} {{ arrows.atual }}</button>
+                <button onClick="{{ sortBy.dif }}" style="all:unset;cursor:pointer;text-align:right">Diferença {{ arrows.dif }}</button>
+                <button onClick="{{ sortBy.pct }}" style="all:unset;cursor:pointer;text-align:right">% {{ arrows.pct }}</button>
+                <span style="text-align:center">Queda · Aumento</span>
+              </div>
+              <sc-for list="{{ rows }}" as="r" hint-placeholder-count="10">
+                <div style="display:grid;grid-template-columns:150px minmax(200px,1.6fr) 100px 100px 100px 96px 180px;gap:12px;padding:12px 24px;align-items:center;border-bottom:1px solid rgba(0,0,0,0.06);font-size:14px" style-hover="background:#FAFAF9">
+                  <span style="font-size:13px;color:#8A8A8A;font-variant-numeric:tabular-nums">{{ r.crm }}</span>
+                  <span style="font-weight:600;display:flex;align-items:center;gap:8px;min-width:0">
+                    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.nome }}</span>
+                    <sc-if value="{{ r.badge }}" hint-placeholder-val="{{ false }}">
+                      <span style="flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 6px;border-radius:6px;color:{{ r.color }};background:{{ r.bg }}">{{ r.badge }}</span>
+                    </sc-if>
+                  </span>
+                  <span style="text-align:right;font-variant-numeric:tabular-nums;color:#2A2A2A">{{ r.base }}</span>
+                  <span style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">{{ r.atual }}</span>
+                  <span style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:{{ r.color }}">{{ r.dif }}</span>
+                  <span style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:{{ r.color }}">{{ r.pct }}</span>
+                  <div style="display:grid;grid-template-columns:1fr 2px 1fr;align-items:center;height:14px">
+                    <div style="display:flex;justify-content:flex-end;height:10px"><div style="height:100%;border-radius:4px 0 0 4px;background:#DC2626;width:{{ r.neg }}"></div></div>
+                    <div style="height:14px;background:rgba(0,0,0,0.2)"></div>
+                    <div style="display:flex;height:10px"><div style="height:100%;border-radius:0 4px 4px 0;background:#2D9B5A;width:{{ r.posw }}"></div></div>
+                  </div>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noRows }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:40px 24px;text-align:center;color:#8A8A8A;font-size:14px">Nenhum prescritor neste filtro.</div>
+              </sc-if>
+            </div>
+          </div>
+          <div style="padding:14px 24px;font-size:13px;color:#8A8A8A;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <span>{{ footer }}</span>
+            <span>Métrica: {{ metricLabel }}</span>
+          </div>
+        </div>
+      </sc-if>
+    </section>
+  </main>
+</div>
+</sc-if>
+
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:#0D0D0D;color:#fff;padding:12px 20px;border-radius:999px;font-size:14px;font-weight:500;box-shadow:0 16px 48px rgba(0,0,0,0.2);z-index:10">{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;excluirSemPrescritor&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Dados&quot;},&quot;minOrcamentos&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:0,&quot;min&quot;:0,&quot;max&quot;:50,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Dados&quot;}}">
+const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MESES_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const ABBR = {JAN:1,FEV:2,FEB:2,MAR:3,ABR:4,APR:4,MAI:5,MAY:5,JUN:6,JUL:7,AGO:8,AUG:8,SET:9,SEP:9,OUT:10,OCT:10,NOV:11,DEZ:12,DEC:12};
+const SEM = 'CRM-BA-808080';
+const LS = 'cmp-prescritores-prefs-v2';
+const CFG = window.APP_CONFIG || {};
+// Lido antes do supabase-js limpar o hash: diz se a pessoa chegou por convite ou recuperação de senha
+if (window.__authHash === undefined) window.__authHash = location.hash;
+const HASH = new URLSearchParams(window.__authHash.replace(/^#/, ''));
+if (!window.__sb && CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase)
+  window.__sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+const sb = window.__sb || null;
+const AUTH_ERRORS = { 'Invalid login credentials': 'E-mail ou senha inválidos.', 'Email not confirmed': 'E-mail ainda não confirmado.', 'New password should be different from the old password.': 'A nova senha deve ser diferente da anterior.' };
+const authErr = e => AUTH_ERRORS[e.message] || e.message;
+const RED = '#DC2626', GREEN = '#2D9B5A', MUTED = '#8A8A8A';
+const key = (y, m) => y + '-' + String(m).padStart(2, '0');
+const nf = new Intl.NumberFormat('pt-BR');
+const cf = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+
+function detect(s) {
+  const m = String(s || '').toUpperCase().match(/(JAN|FEV|FEB|MAR|ABR|APR|MAI|MAY|JUN|JUL|AGO|AUG|SET|SEP|OUT|OCT|NOV|DEZ|DEC)[^A-Z0-9]?(\d{4}|\d{2})/);
+  if (!m) return null;
+  let y = +m[2]; if (y < 100) y += 2000;
+  return { month: ABBR[m[1]], year: y };
+}
+function parseSheet(aoa) {
+  const hi = aoa.findIndex(r => r.some(c => /FETU/i.test(String(c))));
+  if (hi < 0) return null;
+  const h = aoa[hi].map(c => String(c).toUpperCase());
+  const col = t => h.findIndex(c => t.some(x => c.includes(x)));
+  const ix = { crm: col(['CRM', 'PF/UF']), nome: col(['NOME']), fetu: col(['FETU']), aprov: col(['APROV']), rejei: col(['REJEI']), vlVenda: col(['VENDA']), vlCusto: col(['CUSTO']) };
+  if (ix.crm < 0 || ix.fetu < 0) return null;
+  const num = v => { const n = typeof v === 'number' ? v : parseFloat(String(v).replace(/\./g, '').replace(',', '.')); return isNaN(n) ? 0 : n; };
+  const rows = [];
+  for (const r of aoa.slice(hi + 1)) {
+    const crm = String(r[ix.crm] ?? '').trim();
+    if (!crm || r[ix.fetu] === '' || r[ix.fetu] == null) continue;
+    rows.push({ crm, nome: String(r[ix.nome] ?? '').trim(), fetu: num(r[ix.fetu]), aprov: ix.aprov >= 0 ? num(r[ix.aprov]) : 0, rejei: ix.rejei >= 0 ? num(r[ix.rejei]) : 0, vlVenda: ix.vlVenda >= 0 ? num(r[ix.vlVenda]) : 0, vlCusto: ix.vlCusto >= 0 ? num(r[ix.vlCusto]) : 0 });
+  }
+  return rows.length ? rows : null;
+}
+
+class Component extends DCLogic {
+  state = { data: {}, pending: [], anoBase: 2025, anoAtual: 2026, metric: 'fetu', filter: 'todos', q: '', sortKey: 'dif', sortDir: 1, selMonths: null, drag: false, toast: '', excluir: undefined,
+    auth: sb ? 'loading' : 'config', session: null, authMode: 'login', email: '', password: '', password2: '', busy: false, authMsg: '', authOk: false, loading: false };
+  fileRef = React.createRef();
+  target = null;
+  uid = null;
+
+  componentDidMount() {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) {}
+    if (saved) this.setState({ anoBase: saved.anoBase || 2025, anoAtual: saved.anoAtual || 2026 });
+    if (!sb) return;
+    const type = HASH.get('type');
+    if (HASH.get('error')) this.setState({ authMsg: HASH.get('error_code') === 'otp_expired' ? 'Link expirado ou já utilizado. Peça um novo convite ou use "Esqueci minha senha".' : (HASH.get('error_description') || 'Link inválido.') });
+    this.sub = sb.auth.onAuthStateChange((ev, session) => {
+      // Não chamar o supabase de dentro deste callback (pode travar); por isso o setTimeout
+      setTimeout(() => {
+        if (ev === 'PASSWORD_RECOVERY') this.setState({ authMode: 'setpw' });
+        this.onSession(session);
+      }, 0);
+    }).data.subscription;
+    sb.auth.getSession().then(({ data }) => {
+      if (data.session && (type === 'invite' || type === 'recovery')) this.setState({ authMode: 'setpw' });
+      this.onSession(data.session);
+    });
+  }
+  componentWillUnmount() {
+    if (this.sub) this.sub.unsubscribe();
+  }
+  onSession(session) {
+    const uid = session ? session.user.id : null;
+    this.setState({ session, auth: 'ready' });
+    if (uid === this.uid) return;
+    this.uid = uid;
+    this.setState({ data: {}, pending: [], selMonths: null });
+    if (uid) this.load();
+  }
+  async load() {
+    this.setState({ loading: true });
+    const { data: rows, error } = await sb.from('months').select('year,month,file,sheet,rows');
+    if (error) { this.setState({ loading: false }); return this.flash('Erro ao carregar dados: ' + error.message); }
+    const data = {}; rows.forEach(m => { data[key(m.year, m.month)] = m; });
+    this.setState({ data, loading: false });
+  }
+  persist() {
+    try { localStorage.setItem(LS, JSON.stringify({ anoBase: this.state.anoBase, anoAtual: this.state.anoAtual })); } catch (e) {}
+  }
+  async signIn(e) {
+    e.preventDefault();
+    this.setState({ busy: true, authMsg: '' });
+    const { error } = await sb.auth.signInWithPassword({ email: this.state.email.trim(), password: this.state.password });
+    this.setState({ busy: false, password: '', authMsg: error ? authErr(error) : '', authOk: false });
+  }
+  async sendReset(e) {
+    e.preventDefault();
+    this.setState({ busy: true, authMsg: '' });
+    const { error } = await sb.auth.resetPasswordForEmail(this.state.email.trim(), { redirectTo: location.origin + location.pathname });
+    this.setState({ busy: false, authMsg: error ? authErr(error) : 'Se o e-mail estiver cadastrado, você vai receber um link para definir uma nova senha.', authOk: !error });
+  }
+  async setPassword(e) {
+    e.preventDefault();
+    const { password, password2 } = this.state;
+    if (password.length < 8) return this.setState({ authMsg: 'A senha precisa ter pelo menos 8 caracteres.', authOk: false });
+    if (password !== password2) return this.setState({ authMsg: 'As senhas não conferem.', authOk: false });
+    this.setState({ busy: true, authMsg: '' });
+    const { error } = await sb.auth.updateUser({ password });
+    if (error) return this.setState({ busy: false, authMsg: authErr(error), authOk: false });
+    this.setState({ busy: false, authMode: 'login', password: '', password2: '' });
+    this.flash('Senha definida');
+  }
+  flash(msg) {
+    clearTimeout(this._t);
+    this.setState({ toast: msg });
+    this._t = setTimeout(() => this.setState({ toast: '' }), 3200);
+  }
+  async addEntries(entries) {
+    this.setState(s => { const data = { ...s.data }; entries.forEach(e => { data[key(e.year, e.month)] = e; }); return { data }; });
+    const { error } = await sb.from('months').upsert(entries.map(e => ({ user_id: this.uid, year: e.year, month: e.month, file: e.file, sheet: e.sheet, rows: e.rows })), { onConflict: 'user_id,year,month' });
+    if (error) { this.flash('Erro ao salvar: ' + error.message); this.load(); }
+  }
+  async removeMonth(y, m) {
+    this.setState(st => { const nd = { ...st.data }; delete nd[key(y, m)]; return { data: nd }; });
+    const { error } = await sb.from('months').delete().match({ user_id: this.uid, year: y, month: m });
+    if (error) { this.flash('Erro ao remover: ' + error.message); this.load(); }
+  }
+  async handleFiles(list) {
+    if (!window.XLSX) return this.flash('Leitor de planilhas ainda carregando — tente de novo.');
+    const target = this.target; this.target = null;
+    const add = [], pend = [];
+    for (const file of Array.from(list)) {
+      try {
+        const wb = window.XLSX.read(await file.arrayBuffer(), { type: 'array' });
+        const sheets = wb.SheetNames.map(n => ({ n, rows: parseSheet(window.XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: '' })) })).filter(x => x.rows);
+        if (target) {
+          const pick = sheets.find(x => { const d = detect(x.n); return d && d.month === target.month && d.year === target.year; }) || sheets[0];
+          if (pick) add.push({ year: target.year, month: target.month, file: file.name, sheet: pick.n, rows: pick.rows });
+          continue;
+        }
+        sheets.forEach(x => {
+          const d = detect(x.n) || (sheets.length === 1 ? detect(file.name) : null);
+          if (d) add.push({ ...d, file: file.name, sheet: x.n, rows: x.rows });
+          else pend.push({ id: Math.random().toString(36).slice(2), file: file.name, sheet: x.n, rows: x.rows, month: '', year: this.state.anoAtual });
+        });
+      } catch (e) { this.flash('Não foi possível ler ' + file.name); }
+    }
+    if (add.length) this.addEntries(add);
+    if (pend.length) this.setState(s => ({ pending: [...s.pending, ...pend] }));
+    if (add.length || pend.length) this.flash(add.length ? add.map(e => MESES[e.month - 1] + '/' + e.year).join(', ') + ' importado' + (add.length > 1 ? 's' : '') : 'Informe o mês das abas enviadas');
+    else this.flash('Nenhuma aba com coluna FETU encontrada');
+  }
+  updPending(id, patch) { this.setState(s => ({ pending: s.pending.map(p => p.id === id ? { ...p, ...patch } : p) })); }
+
+  aggregate(year, months, excl) {
+    const m = new Map();
+    months.forEach(mo => {
+      const d = this.state.data[key(year, mo)]; if (!d) return;
+      d.rows.forEach(r => {
+        if (excl && r.crm === SEM) return;
+        const a = m.get(r.crm) || { crm: r.crm, nome: r.nome, fetu: 0, aprov: 0, rejei: 0, vlVenda: 0 };
+        a.fetu += r.fetu; a.aprov += r.aprov; a.rejei += r.rejei; a.vlVenda += r.vlVenda;
+        m.set(r.crm, a);
+      });
+    });
+    return m;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const excluir = s.excluir ?? (this.props.excluirSemPrescritor ?? true);
+    const minOrc = this.props.minOrcamentos ?? 0;
+    const { anoBase, anoAtual, data } = s;
+    const has = (y, m) => !!data[key(y, m)];
+    const years = new Set([2023, 2024, 2025, 2026, 2027]); Object.values(data).forEach(d => years.add(d.year));
+    const yearOptions = [...years].sort();
+
+    const yearRows = [anoBase, anoAtual].map((y, i) => ({
+      year: y, label: i === 0 ? 'Base' : 'Atual',
+      count: MESES.filter((_, m) => has(y, m + 1)).length,
+      cells: MESES.map((label, mi) => {
+        const d = data[key(y, mi + 1)];
+        return {
+          label, loaded: !!d, missing: !d,
+          total: d ? nf.format(d.rows.reduce((a, r) => a + r.fetu, 0)) : '',
+          prescr: d ? d.rows.length : 0,
+          title: d ? d.file + ' · aba ' + d.sheet : '',
+          onAdd: () => { this.target = { year: y, month: mi + 1 }; this.fileRef.current && this.fileRef.current.click(); },
+          onRemove: () => { if (confirm('Remover ' + MESES_FULL[mi] + '/' + y + '?')) this.removeMonth(y, mi + 1); }
+        };
+      })
+    }));
+
+    const both = [];
+    for (let m = 1; m <= 12; m++) if (has(anoBase, m) && has(anoAtual, m)) both.push(m);
+    const sel = (s.selMonths || both).filter(m => both.includes(m));
+    const monthChips = MESES.map((label, mi) => {
+      const m = mi + 1, ok = both.includes(m), on = ok && sel.includes(m);
+      return { label, on, off: ok && !on, disabled: !ok, title: 'Falta ' + (has(anoBase, m) ? anoAtual : has(anoAtual, m) ? anoBase : anoBase + ' e ' + anoAtual),
+        onToggle: () => this.setState({ selMonths: on ? sel.filter(x => x !== m) : [...sel, m].sort((a, b) => a - b) }) };
+    });
+
+    const periodTitle = !sel.length ? anoBase + ' × ' + anoAtual
+      : (sel.length === 1 ? MESES_FULL[sel[0] - 1] : sel.length === 12 ? 'Ano completo' : sel.map(m => MESES[m - 1]).join(', ')) + ' · ' + anoBase + ' × ' + anoAtual;
+
+    const B = this.aggregate(anoBase, sel, excluir), A = this.aggregate(anoAtual, sel, excluir);
+    const tot = mp => { let f = 0, a = 0, n = 0; mp.forEach(r => { f += r.fetu; a += r.aprov; if (r.fetu > 0) n++; }); return { f, a, n, c: f ? a / f : 0 }; };
+    const tb = tot(B), ta = tot(A);
+    const pctBadge = (b, a) => { if (!b) return { delta: '—', color: MUTED, bg: '#F0EFED' }; const p = (a - b) / b; return { delta: (p > 0 ? '+' : '') + (p * 100).toFixed(1).replace('.', ',') + '%', color: p < 0 ? RED : p > 0 ? GREEN : MUTED, bg: p < 0 ? 'rgba(220,38,38,0.1)' : p > 0 ? 'rgba(45,155,90,0.12)' : '#F0EFED' }; };
+    const pp = ta.c - tb.c;
+    const kpis = [
+      { label: 'Orçamentos efetuados', atual: nf.format(ta.f), base: nf.format(tb.f), ...pctBadge(tb.f, ta.f) },
+      { label: 'Aprovados', atual: nf.format(ta.a), base: nf.format(tb.a), ...pctBadge(tb.a, ta.a) },
+      { label: 'Conversão', atual: (ta.c * 100).toFixed(1).replace('.', ',') + '%', base: (tb.c * 100).toFixed(1).replace('.', ',') + '%', delta: (pp > 0 ? '+' : '') + (pp * 100).toFixed(1).replace('.', ',') + ' p.p.', color: pp < 0 ? RED : pp > 0 ? GREEN : MUTED, bg: pp < 0 ? 'rgba(220,38,38,0.1)' : pp > 0 ? 'rgba(45,155,90,0.12)' : '#F0EFED' },
+      { label: 'Prescritores ativos', atual: nf.format(ta.n), base: nf.format(tb.n), ...pctBadge(tb.n, ta.n) }
+    ];
+
+    const metric = s.metric;
+    const fmt = v => metric === 'vlVenda' ? cf.format(v) : nf.format(Math.round(v * 100) / 100);
+    let all = [];
+    new Set([...B.keys(), ...A.keys()]).forEach(crm => {
+      const rb = B.get(crm), ra = A.get(crm);
+      if (Math.max(rb ? rb.fetu : 0, ra ? ra.fetu : 0) < minOrc) return;
+      const b = rb ? rb[metric] : 0, a = ra ? ra[metric] : 0, dif = a - b;
+      const st = b === 0 && a > 0 ? 'novo' : a === 0 && b > 0 ? 'perdido' : dif < 0 ? 'queda' : dif > 0 ? 'alta' : 'estavel';
+      all.push({ crm, nome: (ra || rb).nome, b, a, dif, pct: b ? dif / b : (a ? Infinity : 0), st });
+    });
+    const counts = { todos: all.length, queda: all.filter(r => r.dif < 0).length, alta: all.filter(r => r.dif > 0).length, novo: all.filter(r => r.st === 'novo').length, perdido: all.filter(r => r.st === 'perdido').length };
+    const filters = [['todos', 'Todos'], ['queda', 'Em queda'], ['alta', 'Em alta'], ['novo', 'Novos'], ['perdido', 'Perdidos']];
+    const filterTabs = filters.map(([k, label]) => ({ label, count: counts[k], active: s.filter === k, inactive: s.filter !== k, onClick: () => this.setState({ filter: k }) }));
+
+    const q = s.q.trim().toUpperCase();
+    let list = all.filter(r => s.filter === 'todos' ? true : s.filter === 'queda' ? r.dif < 0 : s.filter === 'alta' ? r.dif > 0 : r.st === s.filter);
+    if (q) list = list.filter(r => r.nome.toUpperCase().includes(q) || r.crm.toUpperCase().includes(q));
+    const sk = s.sortKey, dir = s.sortDir;
+    const val = r => ({ crm: r.crm, nome: r.nome, base: r.b, atual: r.a, dif: r.dif, pct: r.pct })[sk];
+    list.sort((x, y) => { const a = val(x), b = val(y); return (typeof a === 'string' ? a.localeCompare(b) : a - b) * dir || x.dif - y.dif; });
+    this._export = list;
+    const maxAbs = Math.max(1, ...list.map(r => Math.abs(r.dif)));
+    const rows = list.map(r => {
+      const color = r.dif < 0 ? RED : r.dif > 0 ? GREEN : MUTED;
+      return {
+        crm: r.crm, nome: r.nome || '—', base: fmt(r.b), atual: fmt(r.a),
+        dif: (r.dif > 0 ? '+' : '') + fmt(r.dif),
+        pct: r.st === 'novo' ? 'novo' : r.b ? (r.pct > 0 ? '+' : '') + (r.pct * 100).toFixed(1).replace('.', ',') + '%' : '—',
+        badge: r.st === 'novo' ? 'Novo' : r.st === 'perdido' ? 'Perdido' : '',
+        color, bg: r.st === 'novo' ? 'rgba(45,155,90,0.12)' : 'rgba(220,38,38,0.1)',
+        neg: r.dif < 0 ? (Math.abs(r.dif) / maxAbs * 100) + '%' : '0%',
+        posw: r.dif > 0 ? (r.dif / maxAbs * 100) + '%' : '0%'
+      };
+    });
+
+    const metricDefs = [['fetu', 'Efetuados'], ['aprov', 'Aprovados'], ['rejei', 'Rejeitados'], ['vlVenda', 'Valor rejeitado']];
+    const metrics = metricDefs.map(([k, label]) => ({ label, active: metric === k, inactive: metric !== k, onClick: () => this.setState({ metric: k }) }));
+    const sortBy = {}, arrows = {};
+    ['crm', 'nome', 'base', 'atual', 'dif', 'pct'].forEach(k => {
+      sortBy[k] = () => this.setState(st => st.sortKey === k ? { sortDir: -st.sortDir } : { sortKey: k, sortDir: k === 'crm' || k === 'nome' ? 1 : -1 });
+      arrows[k] = sk === k ? (dir > 0 ? '↑' : '↓') : '';
+    });
+
+    const pendingView = s.pending.map(p => ({
+      ...p, n: p.rows.length,
+      onMonth: e => this.updPending(p.id, { month: e.target.value }),
+      onYear: e => this.updPending(p.id, { year: +e.target.value }),
+      onConfirm: () => {
+        if (!p.month) return this.flash('Escolha o mês');
+        this.addEntries([{ year: +p.year, month: +p.month, file: p.file, sheet: p.sheet, rows: p.rows }]);
+        this.setState(st => ({ pending: st.pending.filter(x => x.id !== p.id) }));
+      },
+      onDiscard: () => this.setState(st => ({ pending: st.pending.filter(x => x.id !== p.id) }))
+    }));
+
+    const authed = s.auth === 'ready' && !!s.session && s.authMode !== 'setpw';
+    const mode = s.authMode;
+    return {
+      showBoot: s.auth === 'loading', showApp: authed, showAuth: s.auth === 'config' || (s.auth === 'ready' && !authed),
+      noConfig: s.auth === 'config',
+      isLogin: mode === 'login' && !!sb, isForgot: mode === 'forgot', isSetPw: mode === 'setpw',
+      authTitle: mode === 'setpw' ? 'Defina sua senha' : mode === 'forgot' ? 'Recuperar senha' : 'Entrar',
+      authSubtitle: mode === 'setpw' ? 'Escolha uma senha com pelo menos 8 caracteres.' : mode === 'forgot' ? 'Informe seu e-mail para receber o link de redefinição.' : 'Acesso restrito a usuários convidados.',
+      loginLabel: s.busy ? 'Entrando…' : 'Entrar',
+      email: s.email, password: s.password, password2: s.password2, busy: s.busy,
+      hasAuthMsg: !!s.authMsg, authMsg: s.authMsg,
+      authMsgColor: s.authOk ? GREEN : RED, authMsgBg: s.authOk ? 'rgba(45,155,90,0.1)' : 'rgba(220,38,38,0.08)',
+      onEmail: e => this.setState({ email: e.target.value }),
+      onPassword: e => this.setState({ password: e.target.value }),
+      onPassword2: e => this.setState({ password2: e.target.value }),
+      onLogin: e => this.signIn(e),
+      onForgot: e => this.sendReset(e),
+      onSetPw: e => this.setPassword(e),
+      goForgot: () => this.setState({ authMode: 'forgot', authMsg: '' }),
+      goLogin: () => this.setState({ authMode: 'login', authMsg: '' }),
+      userEmail: s.session ? s.session.user.email : '',
+      signOut: () => sb.auth.signOut(),
+      emptyTitle: s.loading ? 'Carregando dados…' : 'Nenhum mês para comparar',
+      emptyText: s.loading ? 'Buscando suas planilhas salvas.' : 'Carregue o mesmo mês nos dois anos selecionados para ver a variação dos prescritores.',
+      fileRef: this.fileRef, anoBase, anoAtual, yearOptions, yearRows, monthChips, periodTitle,
+      monthOptions: MESES_FULL.map((label, i) => ({ v: String(i + 1), label })),
+      hasPending: s.pending.length > 0, pendingView,
+      drag: s.drag, toast: s.toast, hasToast: !!s.toast,
+      noPeriod: !sel.length, hasPeriod: sel.length > 0,
+      kpis, filterTabs, metrics, rows, noRows: rows.length === 0, sortBy, arrows,
+      q: s.q, excluir,
+      metricLabel: metricDefs.find(m => m[0] === metric)[1],
+      footer: rows.length + ' prescritores · ' + sel.length + (sel.length === 1 ? ' mês' : ' meses') + ' comparado' + (sel.length === 1 ? '' : 's'),
+      onAnoBase: e => this.setState({ anoBase: +e.target.value, selMonths: null }, () => this.persist()),
+      onAnoAtual: e => this.setState({ anoAtual: +e.target.value, selMonths: null }, () => this.persist()),
+      onSearch: e => this.setState({ q: e.target.value }),
+      onToggleExcl: () => this.setState({ excluir: !excluir }),
+      openPicker: () => { this.target = null; this.fileRef.current && this.fileRef.current.click(); },
+      onFileInput: e => { const f = e.target.files; if (f && f.length) this.handleFiles(f); e.target.value = ''; },
+      onDragOver: e => { e.preventDefault(); if (!this.state.drag) this.setState({ drag: true }); },
+      onDragLeave: e => { if (!e.currentTarget.contains(e.relatedTarget)) this.setState({ drag: false }); },
+      onDrop: e => { e.preventDefault(); this.setState({ drag: false }); this.target = null; this.handleFiles(e.dataTransfer.files); },
+      exportCsv: () => {
+        const L = this._export || [];
+        const csv = ['CRM;Prescritor;' + anoBase + ';' + anoAtual + ';Diferença;%'].concat(L.map(r => [r.crm, r.nome, r.b, r.a, r.dif, r.b ? (r.pct * 100).toFixed(1) : ''].join(';'))).join('\n');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+        a.download = 'comparativo-prescritores-' + anoBase + '-' + anoAtual + '.csv'; a.click();
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
