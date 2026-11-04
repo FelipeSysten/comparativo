@@ -90,7 +90,7 @@ a{color:#E85D04}a:hover{color:#9C2704}
       <div style="width:1px;height:32px;background:rgba(255,255,255,0.14)"></div>
       <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:220px">
         <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:22px;letter-spacing:-0.01em">Comparativo de Prescritores</div>
-        <div style="font-size:13px;color:#8A8A8A">Orçamentos por prescritor · ano base × ano atual</div>
+        <div style="font-size:13px;color:#8A8A8A">{{ headerSub }}</div>
       </div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;margin-right:4px">
@@ -98,20 +98,33 @@ a{color:#E85D04}a:hover{color:#9C2704}
           <button onClick="{{ signOut }}" style="all:unset;cursor:pointer;font-size:12px;font-weight:600;color:#8A8A8A" style-hover="color:#F48C06">Sair</button>
         </div>
         <button onClick="{{ exportCsv }}" style="height:44px;padding:0 20px;border-radius:999px;border:1px solid rgba(255,255,255,0.18);background:transparent;color:#fff;font:600 14px 'Outfit',sans-serif;cursor:pointer" style-hover="border-color:#fff">Exportar CSV</button>
-        <button onClick="{{ openPicker }}" style="height:44px;padding:0 22px;border-radius:999px;border:none;background:#E85D04;color:#fff;font:700 14px 'Outfit',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:transform 150ms cubic-bezier(0.4,0,0.2,1)" style-hover="background:#F48C06;transform:scale(1.03)" style-active="background:#9C2704;transform:scale(0.97)"><span style="font-size:18px;line-height:1">+</span> Enviar planilha</button>
+        <button onClick="{{ openLaunch }}" style="height:44px;padding:0 20px;border-radius:999px;border:1px solid rgba(255,255,255,0.18);background:transparent;color:#fff;font:600 14px 'Outfit',sans-serif;cursor:pointer" style-hover="border-color:#F48C06;color:#F48C06">Lançar mês</button>
+        <button onClick="{{ openPicker }}" style="height:44px;padding:0 22px;border-radius:999px;border:none;background:#E85D04;color:#fff;font:700 14px 'Outfit',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:transform 150ms cubic-bezier(0.4,0,0.2,1)" style-hover="background:#F48C06;transform:scale(1.03)" style-active="background:#9C2704;transform:scale(0.97)"><span style="font-size:18px;line-height:1">+</span> Enviar arquivo</button>
       </div>
     </div>
   </header>
-  <input type="file" ref="{{ fileRef }}" onChange="{{ onFileInput }}" accept=".xlsx,.xls" multiple="{{ true }}" style="display:none">
+  <input type="file" ref="{{ fileRef }}" onChange="{{ onFileInput }}" accept=".xlsx,.xls,.txt" multiple="{{ true }}" style="display:none">
 
-  <main style="max-width:1320px;width:100%;margin:0 auto;padding:40px 32px 96px;display:flex;flex-direction:column;gap:40px">
+  <main style="max-width:1320px;width:100%;margin:0 auto;padding:32px 32px 96px;display:flex;flex-direction:column;gap:40px">
 
+    <div style="display:flex;gap:6px;flex-wrap:wrap;background:#fff;border-radius:999px;padding:4px;align-self:flex-start;border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 24px rgba(0,0,0,0.06)">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+        <sc-if value="{{ t.active }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ t.onClick }}" style="height:40px;padding:0 20px;border-radius:999px;border:none;background:#0D0D0D;color:#fff;font:700 14px 'Outfit',sans-serif;cursor:pointer">{{ t.label }}</button>
+        </sc-if>
+        <sc-if value="{{ t.inactive }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ t.onClick }}" style="height:40px;padding:0 20px;border-radius:999px;border:none;background:transparent;color:#2A2A2A;font:600 14px 'Outfit',sans-serif;cursor:pointer" style-hover="color:#E85D04">{{ t.label }}</button>
+        </sc-if>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{ tabPresc }}" hint-placeholder-val="{{ true }}">
     <section onDragOver="{{ onDragOver }}" onDragLeave="{{ onDragLeave }}" onDrop="{{ onDrop }}" style="position:relative;background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 24px rgba(0,0,0,0.08);padding:28px;display:flex;flex-direction:column;gap:24px">
       <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
         <div style="display:flex;flex-direction:column;gap:6px">
           <div style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#E85D04">01 · Meses carregados</div>
           <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:24px">Planilhas por mês</div>
-          <div style="font-size:14px;color:#2A2A2A;max-width:560px;text-wrap:pretty">Arraste arquivos .xlsx aqui ou clique num mês vazio para enviar. Abas nomeadas como SET-25, OUT-26 são reconhecidas automaticamente.</div>
+          <div style="font-size:14px;color:#2A2A2A;max-width:560px;text-wrap:pretty">Arraste aqui os relatórios .txt do ERP ou planilhas .xlsx, ou clique num mês vazio para enviar. O mês do .txt vem do cabeçalho do relatório; abas .xlsx nomeadas como SET-25, OUT-26 são reconhecidas automaticamente.</div>
         </div>
         <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
           <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#8A8A8A;font-weight:600">Ano base
@@ -163,12 +176,12 @@ a{color:#E85D04}a:hover{color:#9C2704}
 
       <sc-if value="{{ hasPending }}" hint-placeholder-val="{{ false }}">
         <div style="border-radius:12px;background:rgba(232,93,4,0.08);padding:16px 20px;display:flex;flex-direction:column;gap:12px">
-          <div style="font-weight:700;font-size:14px">Abas sem mês identificado — informe o período</div>
+          <div style="font-weight:700;font-size:14px">Arquivos sem mês identificado — informe o período</div>
           <sc-for list="{{ pendingView }}" as="p" hint-placeholder-count="1">
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border-radius:8px;padding:10px 14px">
               <div style="flex:1;min-width:200px;display:flex;flex-direction:column">
                 <span style="font-weight:600;font-size:14px">{{ p.sheet }}</span>
-                <span style="font-size:12px;color:#8A8A8A">{{ p.file }} · {{ p.n }} prescritores</span>
+                <span style="font-size:12px;color:#8A8A8A">{{ p.file }} · {{ p.n }} prescritores{{ p.note }}</span>
               </div>
               <select value="{{ p.month }}" onChange="{{ p.onMonth }}" style="height:36px;padding:0 10px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:500 14px 'Outfit',sans-serif;background:#fff">
                 <option value="">Mês…</option>
@@ -186,7 +199,7 @@ a{color:#E85D04}a:hover{color:#9C2704}
 
       <sc-if value="{{ drag }}" hint-placeholder-val="{{ false }}">
         <div style="position:absolute;inset:0;border-radius:16px;border:2px dashed #E85D04;background:rgba(255,255,255,0.92);display:flex;align-items:center;justify-content:center;pointer-events:none">
-          <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:24px;color:#E85D04">Solte os arquivos .xlsx</div>
+          <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:24px;color:#E85D04">Solte os arquivos .txt ou .xlsx</div>
         </div>
       </sc-if>
     </section>
@@ -198,7 +211,15 @@ a{color:#E85D04}a:hover{color:#9C2704}
           <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:32px;letter-spacing:-0.01em;line-height:1.1">{{ periodTitle }}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
-          <span style="font-size:12px;color:#8A8A8A;font-weight:600">Meses no período</span>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:12px;color:#8A8A8A;font-weight:600">Meses no período</span>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#8A8A8A;font-weight:600">Acumulado no ano até
+              <select value="{{ presYtd }}" onChange="{{ onPresYtd }}" style="height:30px;padding:0 8px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:600 12px 'Outfit',sans-serif;background:#fff;color:#0D0D0D">
+                <option value="">Seleção livre</option>
+                <sc-for list="{{ monthOptions }}" as="m" hint-placeholder-count="12"><option value="{{ m.v }}">{{ m.label }}</option></sc-for>
+              </select>
+            </label>
+          </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             <sc-for list="{{ monthChips }}" as="mc" hint-placeholder-count="12">
               <sc-if value="{{ mc.on }}" hint-placeholder-val="{{ false }}">
@@ -310,12 +331,204 @@ a{color:#E85D04}a:hover{color:#9C2704}
         </div>
       </sc-if>
     </section>
+    </sc-if>
+
+    <sc-if value="{{ tabVendas }}" hint-placeholder-val="{{ false }}">
+    <sc-if value="{{ totalsMissing }}" hint-placeholder-val="{{ false }}">
+      <div style="border-radius:12px;background:rgba(220,38,38,0.08);color:#9C2704;padding:16px 20px;font-size:14px;text-wrap:pretty">A tabela <b>month_totals</b> ainda não existe no banco. Rode o arquivo <b>supabase/schema.sql</b> atualizado no SQL Editor do Supabase e recarregue a página. Até lá, os totais aparecem só a partir das planilhas de prescritores e nada do lançamento manual é salvo.</div>
+    </sc-if>
+
+    <section style="background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 24px rgba(0,0,0,0.08);padding:28px;display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#E85D04">01 · Dados mensais</div>
+          <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:24px">Vendas e rejeitados por mês</div>
+          <div style="font-size:14px;color:#2A2A2A;max-width:620px;text-wrap:pretty">Clique em qualquer mês para lançar ou editar. O relatório .txt preenche os rejeitados automaticamente; o valor de vendas é sempre informado à mão.</div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+          <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#8A8A8A;font-weight:600">Ano base
+            <select value="{{ anoBase }}" onChange="{{ onAnoBase }}" style="height:40px;padding:0 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:600 15px 'Outfit',sans-serif;background:#fff;color:#0D0D0D">
+              <sc-for list="{{ yearOptions }}" as="y" hint-placeholder-count="5"><option value="{{ y }}">{{ y }}</option></sc-for>
+            </select>
+          </label>
+          <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:20px;color:#8A8A8A;padding-top:16px">→</div>
+          <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#8A8A8A;font-weight:600">Ano atual
+            <select value="{{ anoAtual }}" onChange="{{ onAnoAtual }}" style="height:40px;padding:0 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:600 15px 'Outfit',sans-serif;background:#fff;color:#0D0D0D">
+              <sc-for list="{{ yearOptions }}" as="y" hint-placeholder-count="5"><option value="{{ y }}">{{ y }}</option></sc-for>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto">
+        <div style="min-width:1040px;display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ vGrid }}" as="yr" hint-placeholder-count="2">
+            <div style="display:grid;grid-template-columns:96px repeat(12,minmax(0,1fr));gap:8px;align-items:stretch">
+              <div style="display:flex;flex-direction:column;justify-content:center;gap:2px">
+                <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:22px">{{ yr.year }}</div>
+                <div style="font-size:12px;color:#8A8A8A">{{ yr.label }} · {{ yr.count }}/12</div>
+              </div>
+              <sc-for list="{{ yr.cells }}" as="c" hint-placeholder-count="12">
+                <sc-if value="{{ c.filled }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ c.onOpen }}" title="{{ c.title }}" style="height:92px;border-radius:12px;border:none;background:#0D0D0D;color:#fff;padding:10px;display:flex;flex-direction:column;justify-content:space-between;align-items:stretch;text-align:left;cursor:pointer;font-family:'Outfit',sans-serif" style-hover="box-shadow:0 0 0 2px #E85D04">
+                    <span style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                      <span style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#F48C06">{{ c.label }}</span>
+                      <span style="font-size:9px;font-weight:700;letter-spacing:0.02em;text-transform:uppercase;color:#C8C8C8;background:rgba(255,255,255,0.1);padding:2px 4px;border-radius:5px;white-space:nowrap">{{ c.src }}</span>
+                    </span>
+                    <span style="display:flex;flex-direction:column;gap:2px">
+                      <span style="font-family:'Nunito',sans-serif;font-weight:900;font-size:15px;line-height:1.1;color:{{ c.vendasColor }}">{{ c.vendas }}</span>
+                      <span style="font-size:11px;color:#8A8A8A">{{ c.rej }}</span>
+                    </span>
+                  </button>
+                </sc-if>
+                <sc-if value="{{ c.empty }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ c.onOpen }}" style="height:92px;border-radius:12px;border:1.5px dashed rgba(0,0,0,0.16);background:transparent;color:#8A8A8A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font:600 11px 'Outfit',sans-serif;letter-spacing:0.1em;text-transform:uppercase;transition:all 150ms cubic-bezier(0.4,0,0.2,1)" style-hover="border-color:#E85D04;color:#E85D04;background:rgba(232,93,4,0.06)">
+                    <span style="font-size:20px;line-height:1;font-weight:500">+</span>
+                    <span>{{ c.label }}</span>
+                  </button>
+                </sc-if>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section style="display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#E85D04">02 · Comparação acumulada</div>
+          <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:32px;letter-spacing:-0.01em;line-height:1.1">{{ vTitle }}</div>
+          <div style="font-size:13px;color:#8A8A8A;text-wrap:pretty">{{ vCover }}</div>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#8A8A8A;font-weight:600">Acumulado de janeiro até
+          <select value="{{ vAte }}" onChange="{{ onVAte }}" style="height:40px;padding:0 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:600 15px 'Outfit',sans-serif;background:#fff;color:#0D0D0D">
+            <sc-for list="{{ monthOptions }}" as="m" hint-placeholder-count="12"><option value="{{ m.v }}">{{ m.label }}</option></sc-for>
+          </select>
+        </label>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+        <sc-for list="{{ vKpis }}" as="k" hint-placeholder-count="4">
+          <div style="background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 24px rgba(0,0,0,0.06);padding:24px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <span style="font-size:13px;font-weight:600;color:#2A2A2A">{{ k.label }}</span>
+              <span style="font-size:13px;font-weight:700;padding:4px 8px;border-radius:8px;white-space:nowrap;color:{{ k.color }};background:{{ k.bg }}">{{ k.delta }}</span>
+            </div>
+            <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:34px;line-height:1;letter-spacing:-0.02em">{{ k.atual }}</div>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:13px;color:#8A8A8A">{{ k.base }} em {{ anoBase }}</span>
+              <span style="font-size:13px;font-weight:600;color:{{ k.color }}">{{ k.sub }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 24px rgba(0,0,0,0.06);overflow:hidden">
+        <div style="padding:20px 24px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid rgba(0,0,0,0.08)">
+          <div style="display:flex;background:#F0EFED;border-radius:999px;padding:3px">
+            <sc-for list="{{ vModes }}" as="m" hint-placeholder-count="2">
+              <sc-if value="{{ m.active }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ m.onClick }}" style="height:30px;padding:0 14px;border-radius:999px;border:none;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,0.12);color:#0D0D0D;font:700 12px 'Outfit',sans-serif;cursor:pointer">{{ m.label }}</button>
+              </sc-if>
+              <sc-if value="{{ m.inactive }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ m.onClick }}" style="height:30px;padding:0 14px;border-radius:999px;border:none;background:transparent;color:#2A2A2A;font:600 12px 'Outfit',sans-serif;cursor:pointer">{{ m.label }}</button>
+              </sc-if>
+            </sc-for>
+          </div>
+          <span style="font-size:13px;color:#8A8A8A;text-wrap:pretty">{{ vModeHint }}</span>
+        </div>
+        <div style="overflow-x:auto">
+          <div style="min-width:1180px">
+            <div style="display:grid;grid-template-columns:104px repeat(4,minmax(88px,1fr) minmax(88px,1fr) 72px);gap:8px;padding:12px 24px 0;background:#F0EFED;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#E85D04">
+              <span></span>
+              <span style="grid-column:span 3;border-bottom:1px solid rgba(0,0,0,0.12);padding-bottom:6px">Vendas (R$)</span>
+              <span style="grid-column:span 3;border-bottom:1px solid rgba(0,0,0,0.12);padding-bottom:6px">Rejeitado (R$ venda)</span>
+              <span style="grid-column:span 3;border-bottom:1px solid rgba(0,0,0,0.12);padding-bottom:6px">Orçamentos rejeitados</span>
+              <span style="grid-column:span 3;border-bottom:1px solid rgba(0,0,0,0.12);padding-bottom:6px">% de rejeição</span>
+            </div>
+            <div style="display:grid;grid-template-columns:104px repeat(4,minmax(88px,1fr) minmax(88px,1fr) 72px);gap:8px;padding:8px 24px 12px;background:#F0EFED;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#2A2A2A;text-align:right">
+              <span style="text-align:left">{{ vRowHead }}</span>
+              <span>{{ anoBase }}</span><span>{{ anoAtual }}</span><span>Var.</span>
+              <span>{{ anoBase }}</span><span>{{ anoAtual }}</span><span>Var.</span>
+              <span>{{ anoBase }}</span><span>{{ anoAtual }}</span><span>Var.</span>
+              <span>{{ anoBase }}</span><span>{{ anoAtual }}</span><span>Var.</span>
+            </div>
+            <sc-for list="{{ vRows }}" as="r" hint-placeholder-count="12">
+              <div style="display:grid;grid-template-columns:104px repeat(4,minmax(88px,1fr) minmax(88px,1fr) 72px);gap:8px;padding:11px 24px;align-items:center;border-bottom:1px solid rgba(0,0,0,0.06);font-size:14px;text-align:right;font-variant-numeric:tabular-nums;font-weight:{{ r.weight }};background:{{ r.bg }};opacity:{{ r.op }}" style-hover="background:#FAFAF9">
+                <span style="text-align:left;font-weight:700">{{ r.label }}</span>
+                <span style="color:#2A2A2A">{{ r.vb }}</span><span style="font-weight:600">{{ r.va }}</span><span style="font-weight:700;color:{{ r.vc }}">{{ r.vd }}</span>
+                <span style="color:#2A2A2A">{{ r.rb }}</span><span style="font-weight:600">{{ r.ra }}</span><span style="font-weight:700;color:{{ r.rc }}">{{ r.rd }}</span>
+                <span style="color:#2A2A2A">{{ r.qb }}</span><span style="font-weight:600">{{ r.qa }}</span><span style="font-weight:700;color:{{ r.qc }}">{{ r.qd }}</span>
+                <span style="color:#2A2A2A">{{ r.ib }}</span><span style="font-weight:600">{{ r.ia }}</span><span style="font-weight:700;color:{{ r.ic }}">{{ r.id }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="padding:14px 24px;font-size:13px;color:#8A8A8A;text-wrap:pretty">Variação em verde = melhora (mais vendas, menos rejeição); em vermelho = piora. % de rejeição = orçamentos rejeitados ÷ efetuados (ou o índice lançado à mão), consolidado pela quantidade de orçamentos no acumulado.</div>
+      </div>
+    </section>
+    </sc-if>
   </main>
 </div>
 </sc-if>
 
+  <sc-if value="{{ showModal }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:fixed;inset:0;background:rgba(13,13,13,0.55);z-index:20;display:flex;align-items:flex-start;justify-content:center;padding:48px 16px;overflow-y:auto">
+      <form onClick="{{ stop }}" onSubmit="{{ onSaveModal }}" style="width:100%;max-width:620px;background:#fff;border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.3);padding:28px;display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#E85D04">Lançamento mensal</div>
+            <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:24px">{{ mTitle }}</div>
+            <div style="font-size:13px;color:#8A8A8A;text-wrap:pretty">{{ mOrigin }}</div>
+          </div>
+          <button type="button" onClick="{{ closeModal }}" title="Fechar" style="width:36px;height:36px;flex-shrink:0;border-radius:999px;border:none;background:#F0EFED;color:#2A2A2A;font-size:18px;line-height:1;cursor:pointer" style-hover="background:#0D0D0D;color:#fff">×</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#2A2A2A">Ano
+            <select value="{{ mYear }}" onChange="{{ onMYear }}" style="height:44px;padding:0 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:600 15px 'Outfit',sans-serif;background:#fff;color:#0D0D0D">
+              <sc-for list="{{ yearOptions }}" as="y" hint-placeholder-count="5"><option value="{{ y }}">{{ y }}</option></sc-for>
+            </select>
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#2A2A2A">Mês
+            <select value="{{ mMonth }}" onChange="{{ onMMonth }}" style="height:44px;padding:0 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:600 15px 'Outfit',sans-serif;background:#fff;color:#0D0D0D">
+              <sc-for list="{{ monthOptions }}" as="m" hint-placeholder-count="12"><option value="{{ m.v }}">{{ m.label }}</option></sc-for>
+            </select>
+          </label>
+        </div>
+
+        <sc-for list="{{ mGroups }}" as="g" hint-placeholder-count="4">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#E85D04;border-bottom:1px solid rgba(0,0,0,0.08);padding-bottom:6px">{{ g.title }}</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+              <sc-for list="{{ g.fields }}" as="f" hint-placeholder-count="2">
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#2A2A2A">{{ f.label }}
+                  <input type="text" value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" style="height:44px;padding:0 14px;border-radius:8px;border:1px solid rgba(0,0,0,0.16);font:500 15px 'Outfit',sans-serif;outline:none;text-align:right;font-variant-numeric:tabular-nums" style-focus="border-color:#E85D04">
+                  <span style="font-size:12px;font-weight:500;color:#8A8A8A;text-wrap:pretty">{{ f.hint }}</span>
+                </label>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+
+        <sc-if value="{{ hasMError }}" hint-placeholder-val="{{ false }}">
+          <div style="border-radius:8px;padding:12px 14px;font-size:14px;color:#DC2626;background:rgba(220,38,38,0.08)">{{ mError }}</div>
+        </sc-if>
+
+        <div style="display:flex;gap:12px;justify-content:flex-end;align-items:center;flex-wrap:wrap">
+          <sc-if value="{{ mCanDelete }}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{ onDeleteModal }}" style="height:44px;padding:0 16px;border-radius:999px;border:none;background:transparent;color:#8A8A8A;font:600 14px 'Outfit',sans-serif;cursor:pointer;margin-right:auto" style-hover="color:#DC2626">Excluir lançamento</button>
+          </sc-if>
+          <button type="button" onClick="{{ closeModal }}" style="height:44px;padding:0 20px;border-radius:999px;border:1px solid rgba(0,0,0,0.16);background:#fff;color:#0D0D0D;font:600 14px 'Outfit',sans-serif;cursor:pointer" style-hover="border-color:#0D0D0D">Cancelar</button>
+          <button type="submit" disabled="{{ busy }}" style="height:44px;padding:0 24px;border-radius:999px;border:none;background:#E85D04;color:#fff;font:700 14px 'Outfit',sans-serif;cursor:pointer" style-hover="background:#F48C06">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
-    <div style="position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:#0D0D0D;color:#fff;padding:12px 20px;border-radius:999px;font-size:14px;font-weight:500;box-shadow:0 16px 48px rgba(0,0,0,0.2);z-index:10">{{ toast }}</div>
+    <div style="position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:#0D0D0D;color:#fff;padding:12px 20px;border-radius:999px;font-size:14px;font-weight:500;box-shadow:0 16px 48px rgba(0,0,0,0.2);z-index:30">{{ toast }}</div>
   </sc-if>
 </div>
 </x-dc>
@@ -338,6 +551,64 @@ const RED = '#DC2626', GREEN = '#2D9B5A', MUTED = '#8A8A8A';
 const key = (y, m) => y + '-' + String(m).padStart(2, '0');
 const nf = new Intl.NumberFormat('pt-BR');
 const cf = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+const compact = new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 });
+const n2 = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pct1 = v => v == null ? '—' : v.toFixed(1).replace('.', ',') + '%';
+const range = n => Array.from({ length: n }, (_, i) => i + 1);
+const SRC_LABEL = { txt: 'TXT', manual: 'Manual', planilha: 'XLSX' };
+
+// Relatórios .txt do ERP (ORCAMENTOS REJEITADOS-100% APROVADOS): largura fixa, paginados, codificados em CP850 (DOS)
+const CP850 = 'ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜø£Ø×ƒáíóúñÑªº¿®¬½¼¡«»░▒▓│┤ÁÂÀ©╣║╗╝¢¥┐└┴┬├─┼ãÃ╚╔╩╦╠═╬¤ðÐÊËÈıÍÎÏ┘┌█▄¦Ì▀ÓßÔÒõÕµþÞÚÛÙýÝ¯´­±‗¾¶§÷¸°¨·¹³²■ ';
+function decodeTxt(buf) {
+  const bytes = new Uint8Array(buf);
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch (e) {}
+  let s = '';
+  for (const b of bytes) s += b < 128 ? String.fromCharCode(b) : CP850[b - 128];
+  return s;
+}
+const brNum = s => +String(s).replace(/\./g, '').replace(',', '.');
+const RE_PERIOD = /POR\s+M[EÉ]DICO\s*-\s*(\d{2})\/(\d{2})\/(\d{2,4})\s+A\s+(\d{2})\/(\d{2})\/(\d{2,4})/i;
+// Linha de prescritor: conselho (CRM, CRN, CRF, CRBM, CRO, CREFITO, COREN, RMS…) + nome + 3 quantidades + 2 valores + índice
+const RE_ROW = /^\s*([A-Z]{2,8}-[A-Z]{2}-\S+)\s+(.+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+,\d{2})\s+([\d.]+,\d{2})\s+([\d.]+,\d{2})%\s*$/;
+const RE_TOTAL = /TOTAIS\s*=+>>\s*(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+,\d{2})\s+([\d.]+,\d{2})\s+([\d.]+,\d{2})%/;
+function parseTxt(text) {
+  const yr = y => { y = +y; return y < 100 ? 2000 + y : y; };
+  const p = text.match(RE_PERIOD);
+  const period = p ? { month: +p[2], year: yr(p[3]), endMonth: +p[5], endYear: yr(p[6]) } : null;
+  const rows = [];
+  for (const line of text.split(/\r?\n/)) {
+    const m = line.match(RE_ROW);
+    if (m) rows.push({ crm: m[1], nome: m[2].replace(/\s+/g, ' ').trim(), fetu: +m[3], aprov: +m[4], rejei: +m[5], vlVenda: brNum(m[6]), vlCusto: brNum(m[7]) });
+  }
+  const t = text.match(RE_TOTAL);
+  const totals = t ? { efetu: +t[1], aprov: +t[2], rejei: +t[3], rejVenda: brNum(t[4]), rejCusto: brNum(t[5]), indice: brNum(t[6]) } : null;
+  return { period, rows, totals };
+}
+// Confere a soma das linhas com o rodapé TOTAIS ==>> (protege contra linhas que o parser não reconheceu)
+function totalsMatch(rows, t) {
+  const sum = k => rows.reduce((a, r) => a + r[k], 0);
+  return sum('fetu') === t.efetu && sum('aprov') === t.aprov && sum('rejei') === t.rejei && Math.abs(sum('vlVenda') - t.rejVenda) < 0.05 && Math.abs(sum('vlCusto') - t.rejCusto) < 0.05;
+}
+// Aceita "185.680,86", "185680,86", "380.000" (ponto de milhar), "185680.86", "R$ 1.000" e "43,74%"; '' = null; NaN = inválido
+function parseInput(s) {
+  const t = String(s ?? '').replace(/R\$|%|\s/g, '');
+  if (!t) return null;
+  if (t.includes(',') || /^\d{1,3}(\.\d{3})+$/.test(t)) return +t.replace(/\./g, '').replace(',', '.');
+  return +t;
+}
+const tone = (v, upGood) => v > 0 === upGood ? { color: GREEN, bg: 'rgba(45,155,90,0.12)' } : { color: RED, bg: 'rgba(220,38,38,0.1)' };
+const NEUTRAL = { color: MUTED, bg: '#F0EFED' };
+function deltaPct(b, a, upGood) {
+  if (b == null || a == null) return { txt: '—', ...NEUTRAL };
+  if (!b) return { txt: a ? 'novo' : '—', ...(a ? tone(1, upGood) : NEUTRAL) };
+  const p = (a - b) / b;
+  return { txt: (p > 0 ? '+' : '') + (p * 100).toFixed(1).replace('.', ',') + '%', ...(p ? tone(p, upGood) : NEUTRAL) };
+}
+function deltaPP(b, a, upGood) {
+  if (b == null || a == null) return { txt: '—', ...NEUTRAL };
+  const d = a - b;
+  return { txt: (d > 0 ? '+' : '') + d.toFixed(1).replace('.', ',') + ' p.p.', ...(Math.abs(d) >= 0.05 ? tone(d, upGood) : NEUTRAL) };
+}
 
 function detect(s) {
   const m = String(s || '').toUpperCase().match(/(JAN|FEV|FEB|MAR|ABR|APR|MAI|MAY|JUN|JUL|AGO|AUG|SET|SEP|OUT|OCT|NOV|DEZ|DEC)[^A-Z0-9]?(\d{4}|\d{2})/);
@@ -364,7 +635,8 @@ function parseSheet(aoa) {
 
 class Component extends DCLogic {
   state = { data: {}, pending: [], anoBase: 2025, anoAtual: 2026, metric: 'fetu', filter: 'todos', q: '', sortKey: 'dif', sortDir: 1, selMonths: null, drag: false, toast: '', excluir: undefined,
-    auth: sb ? 'loading' : 'config', session: null, authMode: 'login', email: '', password: '', password2: '', busy: false, authMsg: '', authOk: false, loading: false };
+    auth: sb ? 'loading' : 'config', session: null, authMode: 'login', email: '', password: '', password2: '', busy: false, authMsg: '', authOk: false, loading: false,
+    tab: 'prescritores', totals: {}, totalsMissing: false, modal: null, mError: '', vMode: 'mensal', vAte: null, presYtd: null };
   fileRef = React.createRef();
   target = null;
   uid = null;
@@ -372,7 +644,7 @@ class Component extends DCLogic {
   componentDidMount() {
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) {}
-    if (saved) this.setState({ anoBase: saved.anoBase || 2025, anoAtual: saved.anoAtual || 2026 });
+    if (saved) this.setState({ anoBase: saved.anoBase || 2025, anoAtual: saved.anoAtual || 2026, tab: saved.tab === 'vendas' ? 'vendas' : 'prescritores' });
     if (!sb) return;
     const type = HASH.get('type');
     if (HASH.get('error')) this.setState({ authMsg: HASH.get('error_code') === 'otp_expired' ? 'Link expirado ou já utilizado. Peça um novo convite ou use "Esqueci minha senha".' : (HASH.get('error_description') || 'Link inválido.') });
@@ -396,18 +668,25 @@ class Component extends DCLogic {
     this.setState({ session, auth: 'ready' });
     if (uid === this.uid) return;
     this.uid = uid;
-    this.setState({ data: {}, pending: [], selMonths: null });
+    this.setState({ data: {}, totals: {}, pending: [], selMonths: null, modal: null });
     if (uid) this.load();
   }
   async load() {
     this.setState({ loading: true });
-    const { data: rows, error } = await sb.from('months').select('year,month,file,sheet,rows');
-    if (error) { this.setState({ loading: false }); return this.flash('Erro ao carregar dados: ' + error.message); }
-    const data = {}; rows.forEach(m => { data[key(m.year, m.month)] = m; });
-    this.setState({ data, loading: false });
+    const [m, t] = await Promise.all([
+      sb.from('months').select('year,month,file,sheet,rows'),
+      sb.from('month_totals').select('year,month,vendas,rej_venda,rej_custo,efetu,aprov,rejei,indice,source,file')
+    ]);
+    if (m.error) { this.setState({ loading: false }); return this.flash('Erro ao carregar dados: ' + m.error.message); }
+    const data = {}; m.data.forEach(r => { data[key(r.year, r.month)] = r; });
+    const totals = {}; (t.data || []).forEach(r => { totals[key(r.year, r.month)] = r; });
+    // Tabela ainda não criada: o app continua funcionando, só sem os lançamentos mensais
+    const totalsMissing = !!t.error && (t.error.code === 'PGRST205' || t.error.code === '42P01' || /month_totals/.test(t.error.message));
+    if (t.error && !totalsMissing) this.flash('Erro ao carregar totais: ' + t.error.message);
+    this.setState({ data, totals, totalsMissing, loading: false });
   }
   persist() {
-    try { localStorage.setItem(LS, JSON.stringify({ anoBase: this.state.anoBase, anoAtual: this.state.anoAtual })); } catch (e) {}
+    try { localStorage.setItem(LS, JSON.stringify({ anoBase: this.state.anoBase, anoAtual: this.state.anoAtual, tab: this.state.tab })); } catch (e) {}
   }
   async signIn(e) {
     e.preventDefault();
@@ -437,10 +716,23 @@ class Component extends DCLogic {
     this.setState({ toast: msg });
     this._t = setTimeout(() => this.setState({ toast: '' }), 3200);
   }
+  // entries: { year, month, file, sheet, rows, totals? } — totals vem do rodapé do .txt
   async addEntries(entries) {
-    this.setState(s => { const data = { ...s.data }; entries.forEach(e => { data[key(e.year, e.month)] = e; }); return { data }; });
-    const { error } = await sb.from('months').upsert(entries.map(e => ({ user_id: this.uid, year: e.year, month: e.month, file: e.file, sheet: e.sheet, rows: e.rows })), { onConflict: 'user_id,year,month' });
-    if (error) { this.flash('Erro ao salvar: ' + error.message); this.load(); }
+    const withRows = entries.filter(e => e.rows && e.rows.length);
+    // Só as colunas de rejeição: no upsert o PostgREST atualiza apenas o que vai no payload, então "vendas" lançado à mão é preservado
+    const tot = entries.filter(e => e.totals).map(e => ({ user_id: this.uid, year: e.year, month: e.month, efetu: e.totals.efetu, aprov: e.totals.aprov, rejei: e.totals.rejei,
+      rej_venda: e.totals.rejVenda, rej_custo: e.totals.rejCusto, indice: null, source: 'txt', file: e.file }));
+    this.setState(s => {
+      const data = { ...s.data }, totals = { ...s.totals };
+      withRows.forEach(e => { data[key(e.year, e.month)] = e; });
+      if (!s.totalsMissing) tot.forEach(t => { totals[key(t.year, t.month)] = { ...totals[key(t.year, t.month)], ...t }; });
+      return { data, totals };
+    });
+    const ops = [];
+    if (withRows.length) ops.push(sb.from('months').upsert(withRows.map(e => ({ user_id: this.uid, year: e.year, month: e.month, file: e.file, sheet: e.sheet, rows: e.rows })), { onConflict: 'user_id,year,month' }));
+    if (tot.length && !this.state.totalsMissing) ops.push(sb.from('month_totals').upsert(tot, { onConflict: 'user_id,year,month' }));
+    const err = (await Promise.all(ops)).find(r => r.error);
+    if (err) { this.flash('Erro ao salvar: ' + err.error.message); this.load(); }
   }
   async removeMonth(y, m) {
     this.setState(st => { const nd = { ...st.data }; delete nd[key(y, m)]; return { data: nd }; });
@@ -448,13 +740,32 @@ class Component extends DCLogic {
     if (error) { this.flash('Erro ao remover: ' + error.message); this.load(); }
   }
   async handleFiles(list) {
-    if (!window.XLSX) return this.flash('Leitor de planilhas ainda carregando — tente de novo.');
     const target = this.target; this.target = null;
-    const add = [], pend = [];
+    const add = [], pend = [], warn = [];
     for (const file of Array.from(list)) {
+      if (/\.txt$/i.test(file.name)) {
+        try {
+          const r = parseTxt(decodeTxt(await file.arrayBuffer()));
+          if (!r.rows.length && !r.totals) { warn.push(file.name + ' não parece um relatório de orçamentos'); continue; }
+          if (r.totals && !totalsMatch(r.rows, r.totals)) warn.push(file.name + ': a soma das linhas não bate com o TOTAIS do rodapé');
+          if (!r.totals) warn.push(file.name + ': rodapé TOTAIS não encontrado');
+          const entry = { file: file.name, sheet: 'Relatório TXT', rows: r.rows, totals: r.totals };
+          const p = r.period, oneMonth = p && p.month === p.endMonth && p.year === p.endYear;
+          if (oneMonth) add.push({ ...entry, year: p.year, month: p.month });
+          else if (target && !p) add.push({ ...entry, ...target });
+          else {
+            const guess = p || detect(file.name);
+            pend.push({ ...entry, id: Math.random().toString(36).slice(2), month: guess ? String(guess.month) : '', year: guess ? guess.year : this.state.anoAtual,
+              note: p ? ' · relatório de ' + MESES[p.month - 1] + '/' + p.year + ' a ' + MESES[p.endMonth - 1] + '/' + p.endYear + ', escolha o mês' : ' · período não encontrado no cabeçalho' });
+          }
+        } catch (e) { warn.push('Não foi possível ler ' + file.name); }
+        continue;
+      }
+      if (!window.XLSX) { warn.push('Leitor de planilhas ainda carregando — tente de novo.'); continue; }
       try {
         const wb = window.XLSX.read(await file.arrayBuffer(), { type: 'array' });
         const sheets = wb.SheetNames.map(n => ({ n, rows: parseSheet(window.XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: '' })) })).filter(x => x.rows);
+        if (!sheets.length) { warn.push(file.name + ': nenhuma aba com coluna FETU'); continue; }
         if (target) {
           const pick = sheets.find(x => { const d = detect(x.n); return d && d.month === target.month && d.year === target.year; }) || sheets[0];
           if (pick) add.push({ year: target.year, month: target.month, file: file.name, sheet: pick.n, rows: pick.rows });
@@ -463,16 +774,89 @@ class Component extends DCLogic {
         sheets.forEach(x => {
           const d = detect(x.n) || (sheets.length === 1 ? detect(file.name) : null);
           if (d) add.push({ ...d, file: file.name, sheet: x.n, rows: x.rows });
-          else pend.push({ id: Math.random().toString(36).slice(2), file: file.name, sheet: x.n, rows: x.rows, month: '', year: this.state.anoAtual });
+          else pend.push({ id: Math.random().toString(36).slice(2), file: file.name, sheet: x.n, rows: x.rows, month: '', year: this.state.anoAtual, note: '' });
         });
-      } catch (e) { this.flash('Não foi possível ler ' + file.name); }
+      } catch (e) { warn.push('Não foi possível ler ' + file.name); }
     }
-    if (add.length) this.addEntries(add);
-    if (pend.length) this.setState(s => ({ pending: [...s.pending, ...pend] }));
-    if (add.length || pend.length) this.flash(add.length ? add.map(e => MESES[e.month - 1] + '/' + e.year).join(', ') + ' importado' + (add.length > 1 ? 's' : '') : 'Informe o mês das abas enviadas');
-    else this.flash('Nenhuma aba com coluna FETU encontrada');
+    if (add.length) await this.addEntries(add);
+    if (pend.length) this.setState(s => ({ pending: [...s.pending, ...pend], tab: 'prescritores' }));
+    const ok = add.length ? add.map(e => MESES[e.month - 1] + '/' + e.year).join(', ') + ' importado' + (add.length > 1 ? 's' : '') : pend.length ? 'Informe o mês dos arquivos enviados' : '';
+    this.flash([ok].concat(warn).filter(Boolean).join(' · ') || 'Nenhum dado reconhecido');
+    // Um único .txt importado: abre o lançamento do mês para completar o valor de vendas
+    const one = add.length === 1 && add[0].totals ? add[0] : null;
+    if (one && !this.state.totalsMissing) this.openModal(one.year, one.month);
   }
   updPending(id, patch) { this.setState(s => ({ pending: s.pending.map(p => p.id === id ? { ...p, ...patch } : p) })); }
+
+  // Totais do mês: lançamento/txt (month_totals) com fallback para a soma das linhas de prescritores
+  monthInfo(y, m) {
+    const t = this.state.totals[key(y, m)], d = this.state.data[key(y, m)];
+    const rowSum = k => d && d.rows.length ? d.rows.reduce((a, r) => a + (+r[k] || 0), 0) : null;
+    const pick = (v, k) => v != null ? +v : rowSum(k);
+    const efetu = pick(t && t.efetu, 'fetu'), aprov = pick(t && t.aprov, 'aprov'), rejei = pick(t && t.rejei, 'rejei');
+    const indice = t && t.indice != null ? +t.indice : efetu ? rejei / efetu * 100 : null;
+    return {
+      vendas: t && t.vendas != null ? +t.vendas : null,
+      rejVenda: pick(t && t.rej_venda, 'vlVenda'), rejCusto: pick(t && t.rej_custo, 'vlCusto'),
+      efetu, aprov, rejei, indice,
+      source: t && t.source ? t.source : d ? 'planilha' : null,
+      file: (t && t.file) || (d && d.file) || '',
+      has: !!(t || d)
+    };
+  }
+  sumInfo(y, months) {
+    const infos = months.map(m => this.monthInfo(y, m)).filter(i => i.has);
+    const sum = k => { const v = infos.filter(i => i[k] != null); return v.length ? v.reduce((a, i) => a + i[k], 0) : null; };
+    // Índice consolidado ponderado pelos orçamentos efetuados (= Σrejeitados ÷ Σefetuados quando não há override)
+    const w = infos.filter(i => i.indice != null && i.efetu);
+    const idx = infos.filter(i => i.indice != null);
+    const indice = w.length ? w.reduce((a, i) => a + i.indice * i.efetu, 0) / w.reduce((a, i) => a + i.efetu, 0) : idx.length ? idx.reduce((a, i) => a + i.indice, 0) / idx.length : null;
+    return { vendas: sum('vendas'), rejVenda: sum('rejVenda'), rejCusto: sum('rejCusto'), efetu: sum('efetu'), aprov: sum('aprov'), rejei: sum('rejei'), indice,
+      n: infos.length, nVendas: infos.filter(i => i.vendas != null).length, has: infos.length > 0 };
+  }
+
+  openModal(y, m) {
+    const i = this.monthInfo(y, m), t = this.state.totals[key(y, m)];
+    const money = v => v == null ? '' : n2.format(v), int = v => v == null ? '' : String(Math.round(v));
+    this.setState({ mError: '', modal: { year: y, month: m, vendas: money(i.vendas), rejVenda: money(i.rejVenda), rejCusto: money(i.rejCusto),
+      efetu: int(i.efetu), aprov: int(i.aprov), rejei: int(i.rejei), indice: t && t.indice != null ? n2.format(+t.indice) : '' } });
+  }
+  async saveModal(e) {
+    e.preventDefault();
+    const f = this.state.modal; if (!f) return;
+    if (this.state.totalsMissing) return this.setState({ mError: 'Rode o supabase/schema.sql atualizado antes de lançar valores.' });
+    const v = {}; const names = { vendas: 'Valor de vendas', rejVenda: 'Rejeitado (venda)', rejCusto: 'Rejeitado (custo)', efetu: 'Efetuados', aprov: 'Aprovados', rejei: 'Rejeitados', indice: 'Índice' };
+    for (const k of Object.keys(names)) {
+      v[k] = parseInput(f[k]);
+      if (v[k] != null && (isNaN(v[k]) || v[k] < 0)) return this.setState({ mError: names[k] + ': valor inválido.' });
+    }
+    for (const k of ['efetu', 'aprov', 'rejei']) if (v[k] != null && !Number.isInteger(v[k])) return this.setState({ mError: names[k] + ': use um número inteiro.' });
+    if (v.indice != null && v.indice > 100) return this.setState({ mError: 'Índice: informe um percentual entre 0 e 100.' });
+    // Completa a terceira quantidade quando duas foram informadas
+    if (v.efetu == null && v.aprov != null && v.rejei != null) v.efetu = v.aprov + v.rejei;
+    if (v.aprov == null && v.efetu != null && v.rejei != null) v.aprov = v.efetu - v.rejei;
+    if (v.rejei == null && v.efetu != null && v.aprov != null) v.rejei = v.efetu - v.aprov;
+    if (v.efetu != null && v.aprov != null && v.rejei != null && v.aprov + v.rejei !== v.efetu) return this.setState({ mError: 'Aprovados + rejeitados precisam somar o total de efetuados.' });
+    const { year, month } = f, k = key(year, month), old = this.state.totals[k];
+    if (Object.values(v).every(x => x == null)) return old ? this.deleteTotals(year, month) : this.setState({ modal: null });
+    const same = (a, b) => (a == null ? null : +a) === b;
+    const keepTxt = old && old.source === 'txt' && same(old.efetu, v.efetu) && same(old.aprov, v.aprov) && same(old.rejei, v.rejei) && same(old.rej_venda, v.rejVenda) && same(old.rej_custo, v.rejCusto) && same(old.indice, v.indice);
+    const row = { user_id: this.uid, year, month, vendas: v.vendas, rej_venda: v.rejVenda, rej_custo: v.rejCusto, efetu: v.efetu, aprov: v.aprov, rejei: v.rejei, indice: v.indice,
+      source: keepTxt ? 'txt' : 'manual', file: old ? old.file : null };
+    this.setState(s => ({ busy: true, totals: { ...s.totals, [k]: row } }));
+    const { error } = await sb.from('month_totals').upsert(row, { onConflict: 'user_id,year,month' });
+    this.setState({ busy: false });
+    if (error) { this.setState({ mError: 'Erro ao salvar: ' + error.message }); return this.load(); }
+    this.setState({ modal: null });
+    this.flash(MESES_FULL[month - 1] + '/' + year + ' salvo');
+  }
+  async deleteTotals(y, m) {
+    if (!confirm('Excluir o lançamento de ' + MESES_FULL[m - 1] + '/' + y + '? Os prescritores importados desse mês continuam salvos.')) return;
+    this.setState(s => { const totals = { ...s.totals }; delete totals[key(y, m)]; return { totals, modal: null }; });
+    const { error } = await sb.from('month_totals').delete().match({ user_id: this.uid, year: y, month: m });
+    if (error) { this.flash('Erro ao excluir: ' + error.message); this.load(); }
+    else this.flash('Lançamento excluído');
+  }
 
   aggregate(year, months, excl) {
     const m = new Map();
@@ -519,10 +903,11 @@ class Component extends DCLogic {
     const monthChips = MESES.map((label, mi) => {
       const m = mi + 1, ok = both.includes(m), on = ok && sel.includes(m);
       return { label, on, off: ok && !on, disabled: !ok, title: 'Falta ' + (has(anoBase, m) ? anoAtual : has(anoAtual, m) ? anoBase : anoBase + ' e ' + anoAtual),
-        onToggle: () => this.setState({ selMonths: on ? sel.filter(x => x !== m) : [...sel, m].sort((a, b) => a - b) }) };
+        onToggle: () => this.setState({ presYtd: null, selMonths: on ? sel.filter(x => x !== m) : [...sel, m].sort((a, b) => a - b) }) };
     });
 
     const periodTitle = !sel.length ? anoBase + ' × ' + anoAtual
+      : s.presYtd ? 'Acumulado Jan → ' + MESES[s.presYtd - 1] + ' · ' + anoBase + ' × ' + anoAtual
       : (sel.length === 1 ? MESES_FULL[sel[0] - 1] : sel.length === 12 ? 'Ano completo' : sel.map(m => MESES[m - 1]).join(', ')) + ' · ' + anoBase + ' × ' + anoAtual;
 
     const B = this.aggregate(anoBase, sel, excluir), A = this.aggregate(anoAtual, sel, excluir);
@@ -586,15 +971,103 @@ class Component extends DCLogic {
       onYear: e => this.updPending(p.id, { year: +e.target.value }),
       onConfirm: () => {
         if (!p.month) return this.flash('Escolha o mês');
-        this.addEntries([{ year: +p.year, month: +p.month, file: p.file, sheet: p.sheet, rows: p.rows }]);
+        this.addEntries([{ year: +p.year, month: +p.month, file: p.file, sheet: p.sheet, rows: p.rows, totals: p.totals }]);
         this.setState(st => ({ pending: st.pending.filter(x => x.id !== p.id) }));
       },
       onDiscard: () => this.setState(st => ({ pending: st.pending.filter(x => x.id !== p.id) }))
     }));
 
+    // ---- Vendas & Rejeitados ----
+    const lastWith = y => { for (let m = 12; m >= 1; m--) if (this.monthInfo(y, m).has) return m; return 0; };
+    const ate = s.vAte || lastWith(anoAtual) || lastWith(anoBase) || 12;
+    const SB = this.sumInfo(anoBase, range(ate)), SA = this.sumInfo(anoAtual, range(ate));
+    const money = v => v == null ? '—' : cf.format(v), qty = v => v == null ? '—' : nf.format(v);
+    const diff = (b, a, f, unit) => b == null || a == null ? '' : 'Diferença: ' + (a - b > 0 ? '+' : '') + f(a - b) + (unit || '');
+    const kpi = (label, b, a, f, dfn, upGood, sub) => { const d = dfn(b, a, upGood); return { label, atual: f(a), base: f(b), delta: d.txt, color: d.color, bg: d.bg, sub }; };
+    const vKpis = [
+      kpi('Vendas acumuladas', SB.vendas, SA.vendas, money, deltaPct, true, diff(SB.vendas, SA.vendas, cf.format)),
+      kpi('Rejeitado em vendas (R$)', SB.rejVenda, SA.rejVenda, money, deltaPct, false, diff(SB.rejVenda, SA.rejVenda, cf.format)),
+      kpi('Orçamentos rejeitados', SB.rejei, SA.rejei, qty, deltaPct, false, diff(SB.rejei, SA.rejei, nf.format, ' orçamentos')),
+      kpi('Taxa de rejeição consolidada', SB.indice, SA.indice, pct1, deltaPP, false, SA.efetu != null ? nf.format(SA.rejei) + ' de ' + nf.format(SA.efetu) + ' orçamentos em ' + anoAtual : '')
+    ];
+    const mkRow = (label, B, A, extra) => {
+      const c = (b, a, f, dfn, upGood) => { const d = dfn(b, a, upGood); return [f(b), f(a), d.txt, d.color]; };
+      const [vb, va, vd, vc] = c(B.vendas, A.vendas, money, deltaPct, true);
+      const [rb, ra, rd, rc] = c(B.rejVenda, A.rejVenda, money, deltaPct, false);
+      const [qb, qa, qd, qc] = c(B.rejei, A.rejei, qty, deltaPct, false);
+      const [ib, ia, id, ic] = c(B.indice, A.indice, pct1, deltaPP, false);
+      return { label, vb, va, vd, vc, rb, ra, rd, rc, qb, qa, qd, qc, ib, ia, id, ic, weight: 400, bg: 'transparent', op: 1, ...extra };
+    };
+    const strong = { weight: 700, bg: '#FFF7F0' };
+    const ytdLabel = m => m === 1 ? 'Jan' : 'Jan–' + MESES[m - 1];
+    const vSrc = s.vMode === 'acumulado'
+      ? range(ate).map(m => ({ label: ytdLabel(m), B: this.sumInfo(anoBase, range(m)), A: this.sumInfo(anoAtual, range(m)), extra: m === ate ? strong : {} }))
+      : range(12).map(m => ({ label: MESES_FULL[m - 1], B: this.monthInfo(anoBase, m), A: this.monthInfo(anoAtual, m), extra: m > ate ? { op: 0.45 } : {} }))
+          .concat([{ label: 'Total ' + ytdLabel(ate), B: SB, A: SA, extra: strong }]);
+    this._vExport = vSrc;
+    const vRows = vSrc.map(r => mkRow(r.label, r.B, r.A, r.extra));
+    const cover = (y, S) => y + ': ' + S.n + ' de ' + ate + (ate === 1 ? ' mês' : ' meses') + ' com dados, vendas lançadas em ' + S.nVendas;
+    const vGrid = [anoBase, anoAtual].map((y, i) => ({
+      year: y, label: i === 0 ? 'Base' : 'Atual', count: range(12).filter(m => this.monthInfo(y, m).has).length,
+      cells: MESES.map((label, mi) => {
+        const inf = this.monthInfo(y, mi + 1);
+        return {
+          label, filled: inf.has, empty: !inf.has, src: SRC_LABEL[inf.source] || '',
+          vendas: inf.vendas != null ? 'R$ ' + compact.format(inf.vendas) : 'Sem vendas', vendasColor: inf.vendas != null ? '#fff' : '#F48C06',
+          rej: inf.indice != null ? 'Rej. ' + pct1(inf.indice) : 'Sem rejeitados',
+          title: MESES_FULL[mi] + '/' + y + ' · vendas ' + money(inf.vendas) + ' · rejeitado ' + money(inf.rejVenda) + ' · ' + qty(inf.rejei) + ' de ' + qty(inf.efetu) + ' orçamentos' + (inf.file ? ' · ' + inf.file : ''),
+          onOpen: () => this.openModal(y, mi + 1)
+        };
+      })
+    }));
+
+    // ---- Modal de lançamento ----
+    const f = s.modal;
+    const fk = f ? key(f.year, f.month) : '', ft = f ? s.totals[fk] : null;
+    let autoIdx = null;
+    if (f) {
+      const e = parseInput(f.efetu), a = parseInput(f.aprov), r = parseInput(f.rejei);
+      const ef = e != null ? e : a != null && r != null ? a + r : null, rj = r != null ? r : e != null && a != null ? e - a : null;
+      if (ef > 0 && rj != null && !isNaN(rj)) autoIdx = rj / ef * 100;
+    }
+    const fld = (k, label, placeholder, hint) => ({ label, placeholder, hint: hint || '', value: f ? f[k] : '',
+      onChange: e => { const val = e.target.value; this.setState(st => ({ modal: { ...st.modal, [k]: val }, mError: '' })); } });
+    const mGroups = [
+      { title: 'Vendas', fields: [fld('vendas', 'Valor de vendas (R$)', '0,00', 'Faturamento do mês. Não vem no relatório .txt.')] },
+      { title: 'Valores rejeitados', fields: [fld('rejVenda', 'Rejeitado · venda (R$)', '0,00'), fld('rejCusto', 'Rejeitado · custo (R$)', '0,00')] },
+      { title: 'Orçamentos', fields: [fld('efetu', 'Efetuados', '0'), fld('aprov', 'Aprovados', '0'), fld('rejei', 'Rejeitados', '0', 'Informe dois e o terceiro é calculado.')] },
+      { title: 'Índice de rejeição', fields: [fld('indice', 'Índice (%)', autoIdx != null ? n2.format(autoIdx) : '0,00',
+        autoIdx != null ? 'Em branco = automático: ' + n2.format(autoIdx) + '% (rejeitados ÷ efetuados).' : 'Em branco = calculado por rejeitados ÷ efetuados.')] }
+    ];
+    const fd = f ? data[fk] : null;
+    const mOrigin = !f ? '' : ft && ft.source === 'txt' ? 'Rejeitados importados de ' + ft.file + '. Complete ou ajuste o valor de vendas.'
+      : ft ? 'Lançado manualmente.' : fd ? 'Quantidades preenchidas a partir da planilha ' + fd.file + '.' : 'Mês sem dados. Preencha os campos abaixo.';
+    const openLaunch = () => {
+      const pend = range(12).find(m => { const i = this.monthInfo(anoAtual, m); return i.has && i.vendas == null; });
+      this.openModal(anoAtual, pend || Math.min(12, lastWith(anoAtual) + 1));
+    };
+
     const authed = s.auth === 'ready' && !!s.session && s.authMode !== 'setpw';
     const mode = s.authMode;
     return {
+      tabs: [['prescritores', 'Prescritores'], ['vendas', 'Vendas & Rejeitados']].map(([k, label]) => ({ label, active: s.tab === k, inactive: s.tab !== k, onClick: () => this.setState({ tab: k }, () => this.persist()) })),
+      tabPresc: s.tab === 'prescritores', tabVendas: s.tab === 'vendas',
+      headerSub: s.tab === 'vendas' ? 'Vendas e rejeições da filial · mensal e acumulado no ano' : 'Orçamentos por prescritor · ano base × ano atual',
+      presYtd: s.presYtd ? String(s.presYtd) : '',
+      onPresYtd: e => { const v = +e.target.value; this.setState({ presYtd: v || null, selMonths: v ? range(v) : null }); },
+      totalsMissing: s.totalsMissing, vGrid, vKpis, vRows,
+      vTitle: (ate === 1 ? 'Janeiro' : 'Jan → ' + MESES[ate - 1]) + ' · ' + anoBase + ' × ' + anoAtual,
+      vCover: cover(anoBase, SB) + ' · ' + cover(anoAtual, SA) + '.',
+      vAte: String(ate), onVAte: e => this.setState({ vAte: +e.target.value }),
+      vModes: [['mensal', 'Mês a mês'], ['acumulado', 'Acumulado']].map(([k, label]) => ({ label, active: s.vMode === k, inactive: s.vMode !== k, onClick: () => this.setState({ vMode: k }) })),
+      vModeHint: s.vMode === 'acumulado' ? 'Cada linha soma de janeiro até o mês indicado.' : 'Meses depois de ' + MESES[ate - 1] + ' aparecem esmaecidos e ficam fora do total.',
+      vRowHead: s.vMode === 'acumulado' ? 'Acumulado' : 'Mês',
+      showModal: !!f, mTitle: f ? MESES_FULL[f.month - 1] + ' de ' + f.year : '', mOrigin, mGroups,
+      mYear: f ? f.year : '', mMonth: f ? String(f.month) : '',
+      onMYear: e => this.openModal(+e.target.value, f.month), onMMonth: e => this.openModal(f.year, +e.target.value),
+      hasMError: !!s.mError, mError: s.mError, mCanDelete: !!ft,
+      onSaveModal: e => this.saveModal(e), onDeleteModal: () => this.deleteTotals(f.year, f.month),
+      closeModal: () => this.setState({ modal: null }), stop: e => e.stopPropagation(), openLaunch,
       showBoot: s.auth === 'loading', showApp: authed, showAuth: s.auth === 'config' || (s.auth === 'ready' && !authed),
       noConfig: s.auth === 'config',
       isLogin: mode === 'login' && !!sb, isForgot: mode === 'forgot', isSetPw: mode === 'setpw',
@@ -635,11 +1108,21 @@ class Component extends DCLogic {
       onDragLeave: e => { if (!e.currentTarget.contains(e.relatedTarget)) this.setState({ drag: false }); },
       onDrop: e => { e.preventDefault(); this.setState({ drag: false }); this.target = null; this.handleFiles(e.dataTransfer.files); },
       exportCsv: () => {
-        const L = this._export || [];
-        const csv = ['CRM;Prescritor;' + anoBase + ';' + anoAtual + ';Diferença;%'].concat(L.map(r => [r.crm, r.nome, r.b, r.a, r.dif, r.b ? (r.pct * 100).toFixed(1) : ''].join(';'))).join('\n');
+        let csv, name;
+        if (this.state.tab === 'vendas') {
+          const n = v => v == null ? '' : String(Math.round(v * 100) / 100).replace('.', ',');
+          const cols = [['vendas', 'Vendas'], ['rejVenda', 'Rejeitado venda'], ['rejCusto', 'Rejeitado custo'], ['efetu', 'Efetuados'], ['aprov', 'Aprovados'], ['rejei', 'Rejeitados'], ['indice', '% rejeição']];
+          csv = [['Período'].concat(...cols.map(([, l]) => [l + ' ' + anoBase, l + ' ' + anoAtual])).join(';')]
+            .concat((this._vExport || []).map(r => [r.label].concat(...cols.map(([k]) => [n(r.B[k]), n(r.A[k])])).join(';'))).join('\n');
+          name = 'vendas-rejeitados-' + this.state.vMode + '-' + anoBase + '-' + anoAtual + '.csv';
+        } else {
+          const L = this._export || [];
+          csv = ['CRM;Prescritor;' + anoBase + ';' + anoAtual + ';Diferença;%'].concat(L.map(r => [r.crm, r.nome, r.b, r.a, r.dif, r.b ? (r.pct * 100).toFixed(1) : ''].join(';'))).join('\n');
+          name = 'comparativo-prescritores-' + anoBase + '-' + anoAtual + '.csv';
+        }
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
-        a.download = 'comparativo-prescritores-' + anoBase + '-' + anoAtual + '.csv'; a.click();
+        a.download = name; a.click();
       }
     };
   }

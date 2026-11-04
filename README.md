@@ -16,6 +16,14 @@ Site estático (sem build) com login e banco de dados no Supabase. Cada usuário
 
 > A chave anon é pública por natureza. Quem protege os dados são as políticas RLS criadas pelo `schema.sql`. **Nunca** coloque a chave `service_role` no `config.js`.
 
+> **Atualização (módulo Vendas & Rejeitados):** o `schema.sql` agora também cria a tabela `month_totals`. Quem já tinha rodado a versão anterior precisa rodar o arquivo **inteiro** de novo. Ele pode ser executado várias vezes sem apagar dados.
+
+## Como os dados entram
+
+- **Relatório .txt do ERP** (`ORCAMENTOS REJEITADOS-100% APROVADOS`): use **Enviar arquivo** ou arraste o arquivo para a página. O mês vem do cabeçalho (`POR MEDICO - 01/10/26 A 31/10/26`), não do nome do arquivo. As linhas de prescritores alimentam a aba **Prescritores**, e o rodapé `TOTAIS ==>>` alimenta a aba **Vendas & Rejeitados**. Se a soma das linhas não bater com o rodapé, aparece um aviso.
+- **Planilha .xlsx:** continua funcionando como antes. As abas com nome tipo `SET-25` são reconhecidas automaticamente.
+- **Lançamento manual** (botão **Lançar mês** ou clique num mês da aba Vendas): valor de vendas, rejeitados (venda/custo), orçamentos e índice. O valor de vendas não vem no .txt e é sempre informado à mão. Reimportar o .txt atualiza os rejeitados e mantém as vendas lançadas.
+
 ## 2. Usuários
 
 **Authentication → Users → Invite user** e informe o e-mail. A pessoa recebe um link, abre o site, define a senha e já entra.
