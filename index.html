@@ -118,6 +118,55 @@ a{color:#E85D04}a:hover{color:#9C2704}
       </sc-for>
     </div>
 
+    <section style="background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 24px rgba(0,0,0,0.06);padding:20px 24px;display:flex;flex-direction:column;gap:14px;margin-top:-16px">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:2px;min-width:200px">
+          <span style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#E85D04">Prescritores ignorados</span>
+          <span style="font-size:13px;color:#8A8A8A">{{ ignSummary }}</span>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#2A2A2A;cursor:pointer;height:40px;padding:0 14px;border-radius:999px;border:1px solid rgba(0,0,0,0.12)">
+          <input type="checkbox" checked="{{ excluir }}" onChange="{{ onToggleExcl }}" style="accent-color:#E85D04;width:16px;height:16px;margin:0">
+          Ignorar "sem prescritor"
+        </label>
+        <div style="position:relative;flex:1;min-width:240px;max-width:420px">
+          <input value="{{ ignQ }}" onChange="{{ onIgnQ }}" onFocus="{{ onIgnFocus }}" onBlur="{{ onIgnBlur }}" onKeyDown="{{ onIgnKey }}" placeholder="Ignorar prescritor(es)… nome ou CRM" style="width:100%;height:40px;padding:0 16px;border-radius:999px;border:1px solid rgba(0,0,0,0.16);font:500 14px 'Outfit',sans-serif;outline:none;background:#fff" style-focus="border-color:#E85D04">
+          <sc-if value="{{ ignShowList }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;left:0;right:0;top:46px;z-index:15;background:#fff;border-radius:12px;border:1px solid rgba(0,0,0,0.08);box-shadow:0 16px 48px rgba(0,0,0,0.16);padding:6px;display:flex;flex-direction:column;max-height:340px;overflow-y:auto">
+              <sc-for list="{{ ignOptions }}" as="o" hint-placeholder-count="6">
+                <button type="button" onMouseDown="{{ o.onPick }}" onMouseEnter="{{ o.onHover }}" style="all:unset;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 12px;border-radius:8px;background:{{ o.bg }}">
+                  <span style="display:flex;flex-direction:column;min-width:0">
+                    <span style="font-size:14px;font-weight:600;color:#0D0D0D;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.nome }}</span>
+                    <span style="font-size:12px;color:#8A8A8A">{{ o.crm }}</span>
+                  </span>
+                  <span style="font-size:12px;color:#8A8A8A;white-space:nowrap">{{ o.info }}</span>
+                </button>
+              </sc-for>
+              <sc-if value="{{ ignNoMatch }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:12px;font-size:13px;color:#8A8A8A">Nenhum prescritor encontrado nos meses carregados.</div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+        <sc-if value="{{ hasIgnored }}" hint-placeholder-val="{{ false }}">
+          <button type="button" onClick="{{ clearIgnored }}" style="all:unset;cursor:pointer;font-size:13px;font-weight:600;color:#8A8A8A" style-hover="color:#DC2626">Limpar todos</button>
+        </sc-if>
+      </div>
+      <sc-if value="{{ hasIgnored }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <sc-for list="{{ ignChips }}" as="c" hint-placeholder-count="2">
+            <span title="{{ c.crm }}" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 6px 0 12px;border-radius:999px;background:#0D0D0D;color:#fff;font-size:13px;font-weight:600">
+              {{ c.nome }}
+              <span style="font-size:11px;font-weight:500;color:#8A8A8A">{{ c.crm }}</span>
+              <button type="button" onClick="{{ c.onRemove }}" title="Voltar a incluir no cálculo" style="width:22px;height:22px;border-radius:999px;border:none;background:rgba(255,255,255,0.12);color:#fff;font-size:13px;line-height:1;cursor:pointer;padding:0" style-hover="background:#DC2626">×</button>
+            </span>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ hasIgnWarn }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:13px;color:#9C2704;text-wrap:pretty">{{ ignWarn }}</div>
+      </sc-if>
+    </section>
+
     <sc-if value="{{ tabPresc }}" hint-placeholder-val="{{ true }}">
     <section onDragOver="{{ onDragOver }}" onDragLeave="{{ onDragLeave }}" onDrop="{{ onDrop }}" style="position:relative;background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 24px rgba(0,0,0,0.08);padding:28px;display:flex;flex-direction:column;gap:24px">
       <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
@@ -281,10 +330,6 @@ a{color:#E85D04}a:hover{color:#9C2704}
                 </sc-for>
               </div>
               <input value="{{ q }}" onChange="{{ onSearch }}" placeholder="Buscar nome ou CRM" style="height:36px;width:220px;padding:0 14px;border-radius:999px;border:1px solid rgba(0,0,0,0.16);font:500 14px 'Outfit',sans-serif;outline:none" style-focus="border-color:#E85D04">
-              <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#2A2A2A;cursor:pointer">
-                <input type="checkbox" checked="{{ excluir }}" onChange="{{ onToggleExcl }}" style="accent-color:#E85D04;width:16px;height:16px">
-                Ignorar "sem prescritor"
-              </label>
             </div>
           </div>
 
@@ -555,6 +600,7 @@ const compact = new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFra
 const n2 = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const pct1 = v => v == null ? '—' : v.toFixed(1).replace('.', ',') + '%';
 const range = n => Array.from({ length: n }, (_, i) => i + 1);
+const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
 const SRC_LABEL = { txt: 'TXT', manual: 'Manual', planilha: 'XLSX' };
 
 // Relatórios .txt do ERP (ORCAMENTOS REJEITADOS-100% APROVADOS): largura fixa, paginados, codificados em CP850 (DOS)
@@ -636,7 +682,8 @@ function parseSheet(aoa) {
 class Component extends DCLogic {
   state = { data: {}, pending: [], anoBase: 2025, anoAtual: 2026, metric: 'fetu', filter: 'todos', q: '', sortKey: 'dif', sortDir: 1, selMonths: null, drag: false, toast: '', excluir: undefined,
     auth: sb ? 'loading' : 'config', session: null, authMode: 'login', email: '', password: '', password2: '', busy: false, authMsg: '', authOk: false, loading: false,
-    tab: 'prescritores', totals: {}, totalsMissing: false, modal: null, mError: '', vMode: 'mensal', vAte: null, presYtd: null };
+    tab: 'prescritores', totals: {}, totalsMissing: false, modal: null, mError: '', vMode: 'mensal', vAte: null, presYtd: null,
+    ignored: [], ignQ: '', ignOpen: false, ignHi: 0 };
   fileRef = React.createRef();
   target = null;
   uid = null;
@@ -644,7 +691,8 @@ class Component extends DCLogic {
   componentDidMount() {
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) {}
-    if (saved) this.setState({ anoBase: saved.anoBase || 2025, anoAtual: saved.anoAtual || 2026, tab: saved.tab === 'vendas' ? 'vendas' : 'prescritores' });
+    if (saved) this.setState({ anoBase: saved.anoBase || 2025, anoAtual: saved.anoAtual || 2026, tab: saved.tab === 'vendas' ? 'vendas' : 'prescritores',
+      ignored: Array.isArray(saved.ignored) ? saved.ignored.filter(c => typeof c === 'string') : [], excluir: typeof saved.excluir === 'boolean' ? saved.excluir : undefined });
     if (!sb) return;
     const type = HASH.get('type');
     if (HASH.get('error')) this.setState({ authMsg: HASH.get('error_code') === 'otp_expired' ? 'Link expirado ou já utilizado. Peça um novo convite ou use "Esqueci minha senha".' : (HASH.get('error_description') || 'Link inválido.') });
@@ -686,7 +734,30 @@ class Component extends DCLogic {
     this.setState({ data, totals, totalsMissing, loading: false });
   }
   persist() {
-    try { localStorage.setItem(LS, JSON.stringify({ anoBase: this.state.anoBase, anoAtual: this.state.anoAtual, tab: this.state.tab })); } catch (e) {}
+    const s = this.state;
+    try { localStorage.setItem(LS, JSON.stringify({ anoBase: s.anoBase, anoAtual: s.anoAtual, tab: s.tab, ignored: s.ignored, excluir: s.excluir })); } catch (e) {}
+  }
+  // CRMs fora do cálculo: atalho "sem prescritor" + prescritores escolhidos na busca
+  exSet() {
+    const ex = new Set(this.state.ignored);
+    if (this.state.excluir ?? (this.props.excluirSemPrescritor ?? true)) ex.add(SEM);
+    return ex;
+  }
+  // Todos os prescritores presentes nos meses carregados (cache por versão de `data`)
+  prescCatalog() {
+    if (this._catData === this.state.data) return this._cat;
+    const m = new Map();
+    Object.values(this.state.data).forEach(d => d.rows.forEach(r => {
+      const c = m.get(r.crm) || { crm: r.crm, nome: r.nome, fetu: 0, meses: 0 };
+      c.fetu += r.fetu; c.meses++; if (r.nome) c.nome = r.nome;
+      m.set(r.crm, c);
+    }));
+    this._cat = [...m.values()].map(c => ({ ...c, nk: norm(c.nome), ck: c.crm.replace(/[^A-Z0-9]/gi, '').toUpperCase() }));
+    this._catData = this.state.data;
+    return this._cat;
+  }
+  setIgnored(fn) {
+    this.setState(s => ({ ignored: fn(s.ignored), ignQ: '', ignHi: 0 }), () => this.persist());
   }
   async signIn(e) {
     e.preventDefault();
@@ -788,24 +859,29 @@ class Component extends DCLogic {
   }
   updPending(id, patch) { this.setState(s => ({ pending: s.pending.map(p => p.id === id ? { ...p, ...patch } : p) })); }
 
-  // Totais do mês: lançamento/txt (month_totals) com fallback para a soma das linhas de prescritores
-  monthInfo(y, m) {
+  // Totais do mês: lançamento/txt (month_totals) com fallback para a soma das linhas de prescritores.
+  // `ex` (Set de CRMs): desconta desses totais as linhas dos prescritores ignorados. Sem `ex` = valores brutos (usado no modal de edição).
+  monthInfo(y, m, ex) {
     const t = this.state.totals[key(y, m)], d = this.state.data[key(y, m)];
-    const rowSum = k => d && d.rows.length ? d.rows.reduce((a, r) => a + (+r[k] || 0), 0) : null;
-    const pick = (v, k) => v != null ? +v : rowSum(k);
+    const rows = d ? d.rows : [], isEx = r => !!ex && ex.has(r.crm);
+    const sumIf = (k, f) => rows.reduce((a, r) => f(r) ? a + (+r[k] || 0) : a, 0);
+    const pick = (v, k) => v != null ? +v - sumIf(k, isEx) : rows.length ? sumIf(k, r => !isEx(r)) : null;
     const efetu = pick(t && t.efetu, 'fetu'), aprov = pick(t && t.aprov, 'aprov'), rejei = pick(t && t.rejei, 'rejei');
-    const indice = t && t.indice != null ? +t.indice : efetu ? rejei / efetu * 100 : null;
+    const cut = rows.some(isEx);
+    // Índice digitado à mão só vale para o mês inteiro; com prescritores descontados ele é recalculado
+    const indice = t && t.indice != null && !cut ? +t.indice : efetu ? rejei / efetu * 100 : null;
     return {
       vendas: t && t.vendas != null ? +t.vendas : null,
       rejVenda: pick(t && t.rej_venda, 'vlVenda'), rejCusto: pick(t && t.rej_custo, 'vlCusto'),
-      efetu, aprov, rejei, indice,
+      efetu, aprov, rejei, indice, cut,
+      manualOnly: !!t && !rows.length,
       source: t && t.source ? t.source : d ? 'planilha' : null,
       file: (t && t.file) || (d && d.file) || '',
       has: !!(t || d)
     };
   }
-  sumInfo(y, months) {
-    const infos = months.map(m => this.monthInfo(y, m)).filter(i => i.has);
+  sumInfo(y, months, ex) {
+    const infos = months.map(m => this.monthInfo(y, m, ex)).filter(i => i.has);
     const sum = k => { const v = infos.filter(i => i[k] != null); return v.length ? v.reduce((a, i) => a + i[k], 0) : null; };
     // Índice consolidado ponderado pelos orçamentos efetuados (= Σrejeitados ÷ Σefetuados quando não há override)
     const w = infos.filter(i => i.indice != null && i.efetu);
@@ -858,12 +934,12 @@ class Component extends DCLogic {
     else this.flash('Lançamento excluído');
   }
 
-  aggregate(year, months, excl) {
+  aggregate(year, months, ex) {
     const m = new Map();
     months.forEach(mo => {
       const d = this.state.data[key(year, mo)]; if (!d) return;
       d.rows.forEach(r => {
-        if (excl && r.crm === SEM) return;
+        if (ex.has(r.crm)) return;
         const a = m.get(r.crm) || { crm: r.crm, nome: r.nome, fetu: 0, aprov: 0, rejei: 0, vlVenda: 0 };
         a.fetu += r.fetu; a.aprov += r.aprov; a.rejei += r.rejei; a.vlVenda += r.vlVenda;
         m.set(r.crm, a);
@@ -875,6 +951,7 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state;
     const excluir = s.excluir ?? (this.props.excluirSemPrescritor ?? true);
+    const ex = this.exSet();
     const minOrc = this.props.minOrcamentos ?? 0;
     const { anoBase, anoAtual, data } = s;
     const has = (y, m) => !!data[key(y, m)];
@@ -885,12 +962,12 @@ class Component extends DCLogic {
       year: y, label: i === 0 ? 'Base' : 'Atual',
       count: MESES.filter((_, m) => has(y, m + 1)).length,
       cells: MESES.map((label, mi) => {
-        const d = data[key(y, mi + 1)];
+        const d = data[key(y, mi + 1)], kept = d ? d.rows.filter(r => !ex.has(r.crm)) : [];
         return {
           label, loaded: !!d, missing: !d,
-          total: d ? nf.format(d.rows.reduce((a, r) => a + r.fetu, 0)) : '',
-          prescr: d ? d.rows.length : 0,
-          title: d ? d.file + ' · aba ' + d.sheet : '',
+          total: d ? nf.format(kept.reduce((a, r) => a + r.fetu, 0)) : '',
+          prescr: kept.length,
+          title: d ? d.file + ' · aba ' + d.sheet + (kept.length < d.rows.length ? ' · sem os ' + (d.rows.length - kept.length) + ' prescritor(es) ignorado(s)' : '') : '',
           onAdd: () => { this.target = { year: y, month: mi + 1 }; this.fileRef.current && this.fileRef.current.click(); },
           onRemove: () => { if (confirm('Remover ' + MESES_FULL[mi] + '/' + y + '?')) this.removeMonth(y, mi + 1); }
         };
@@ -910,7 +987,7 @@ class Component extends DCLogic {
       : s.presYtd ? 'Acumulado Jan → ' + MESES[s.presYtd - 1] + ' · ' + anoBase + ' × ' + anoAtual
       : (sel.length === 1 ? MESES_FULL[sel[0] - 1] : sel.length === 12 ? 'Ano completo' : sel.map(m => MESES[m - 1]).join(', ')) + ' · ' + anoBase + ' × ' + anoAtual;
 
-    const B = this.aggregate(anoBase, sel, excluir), A = this.aggregate(anoAtual, sel, excluir);
+    const B = this.aggregate(anoBase, sel, ex), A = this.aggregate(anoAtual, sel, ex);
     const tot = mp => { let f = 0, a = 0, n = 0; mp.forEach(r => { f += r.fetu; a += r.aprov; if (r.fetu > 0) n++; }); return { f, a, n, c: f ? a / f : 0 }; };
     const tb = tot(B), ta = tot(A);
     const pctBadge = (b, a) => { if (!b) return { delta: '—', color: MUTED, bg: '#F0EFED' }; const p = (a - b) / b; return { delta: (p > 0 ? '+' : '') + (p * 100).toFixed(1).replace('.', ',') + '%', color: p < 0 ? RED : p > 0 ? GREEN : MUTED, bg: p < 0 ? 'rgba(220,38,38,0.1)' : p > 0 ? 'rgba(45,155,90,0.12)' : '#F0EFED' }; };
@@ -980,7 +1057,7 @@ class Component extends DCLogic {
     // ---- Vendas & Rejeitados ----
     const lastWith = y => { for (let m = 12; m >= 1; m--) if (this.monthInfo(y, m).has) return m; return 0; };
     const ate = s.vAte || lastWith(anoAtual) || lastWith(anoBase) || 12;
-    const SB = this.sumInfo(anoBase, range(ate)), SA = this.sumInfo(anoAtual, range(ate));
+    const SB = this.sumInfo(anoBase, range(ate), ex), SA = this.sumInfo(anoAtual, range(ate), ex);
     const money = v => v == null ? '—' : cf.format(v), qty = v => v == null ? '—' : nf.format(v);
     const diff = (b, a, f, unit) => b == null || a == null ? '' : 'Diferença: ' + (a - b > 0 ? '+' : '') + f(a - b) + (unit || '');
     const kpi = (label, b, a, f, dfn, upGood, sub) => { const d = dfn(b, a, upGood); return { label, atual: f(a), base: f(b), delta: d.txt, color: d.color, bg: d.bg, sub }; };
@@ -1001,8 +1078,8 @@ class Component extends DCLogic {
     const strong = { weight: 700, bg: '#FFF7F0' };
     const ytdLabel = m => m === 1 ? 'Jan' : 'Jan–' + MESES[m - 1];
     const vSrc = s.vMode === 'acumulado'
-      ? range(ate).map(m => ({ label: ytdLabel(m), B: this.sumInfo(anoBase, range(m)), A: this.sumInfo(anoAtual, range(m)), extra: m === ate ? strong : {} }))
-      : range(12).map(m => ({ label: MESES_FULL[m - 1], B: this.monthInfo(anoBase, m), A: this.monthInfo(anoAtual, m), extra: m > ate ? { op: 0.45 } : {} }))
+      ? range(ate).map(m => ({ label: ytdLabel(m), B: this.sumInfo(anoBase, range(m), ex), A: this.sumInfo(anoAtual, range(m), ex), extra: m === ate ? strong : {} }))
+      : range(12).map(m => ({ label: MESES_FULL[m - 1], B: this.monthInfo(anoBase, m, ex), A: this.monthInfo(anoAtual, m, ex), extra: m > ate ? { op: 0.45 } : {} }))
           .concat([{ label: 'Total ' + ytdLabel(ate), B: SB, A: SA, extra: strong }]);
     this._vExport = vSrc;
     const vRows = vSrc.map(r => mkRow(r.label, r.B, r.A, r.extra));
@@ -1010,7 +1087,7 @@ class Component extends DCLogic {
     const vGrid = [anoBase, anoAtual].map((y, i) => ({
       year: y, label: i === 0 ? 'Base' : 'Atual', count: range(12).filter(m => this.monthInfo(y, m).has).length,
       cells: MESES.map((label, mi) => {
-        const inf = this.monthInfo(y, mi + 1);
+        const inf = this.monthInfo(y, mi + 1, ex);
         return {
           label, filled: inf.has, empty: !inf.has, src: SRC_LABEL[inf.source] || '',
           vendas: inf.vendas != null ? 'R$ ' + compact.format(inf.vendas) : 'Sem vendas', vendasColor: inf.vendas != null ? '#fff' : '#F48C06',
@@ -1047,9 +1124,45 @@ class Component extends DCLogic {
       this.openModal(anoAtual, pend || Math.min(12, lastWith(anoAtual) + 1));
     };
 
+    // ---- Prescritores ignorados (autocomplete + chips) ----
+    const cat = this.prescCatalog(), byCrm = new Map(cat.map(c => [c.crm, c]));
+    const iq = norm(s.ignQ).trim(), toks = iq.split(/[\s\-\/]+/).filter(Boolean);
+    // Nome: cada termo digitado é o começo de alguma palavra ("nat ama" → NATALIA LIMA AMARAL).
+    // Conselho: com algum dígito na busca, cada termo aparece no registro ("crf 21266", "8262", "CRN-BA-82").
+    const byName = c => toks.every(t => c.nk.split(' ').some(w => w.startsWith(t)));
+    const byReg = c => /\d/.test(iq) && toks.every(t => c.ck.includes(t.replace(/[^A-Z0-9]/g, '')));
+    const ignList = !iq ? [] : cat
+      .filter(c => c.crm !== SEM && !s.ignored.includes(c.crm) && (byName(c) || byReg(c)))
+      .sort((a, b) => (b.nk.startsWith(toks[0] || '') - a.nk.startsWith(toks[0] || '')) || b.fetu - a.fetu)
+      .slice(0, 8);
+    const hi = Math.min(s.ignHi, Math.max(0, ignList.length - 1));
+    const addIgn = crm => { this.setIgnored(l => l.includes(crm) ? l : [...l, crm]); const c = byCrm.get(crm); this.flash((c ? c.nome : crm) + ' fora do cálculo'); };
+    const ignOptions = ignList.map((c, i) => ({ nome: c.nome || '—', crm: c.crm, info: nf.format(c.fetu) + ' orç. · ' + c.meses + (c.meses > 1 ? ' meses' : ' mês'),
+      bg: i === hi ? '#FFF1E6' : 'transparent', onPick: e => { e.preventDefault(); addIgn(c.crm); }, onHover: () => this.setState({ ignHi: i }) }));
+    const ignChips = s.ignored.map(crm => ({ crm, nome: byCrm.has(crm) ? byCrm.get(crm).nome : crm, onRemove: () => this.setIgnored(l => l.filter(x => x !== crm)) }));
+    const nIgn = s.ignored.length + (excluir ? 1 : 0);
+    // Lançamentos manuais sem linhas de prescritores não têm como descontar ninguém: avisa quais meses ficam sem o desconto
+    const noCut = s.ignored.length ? [anoBase, anoAtual].flatMap(y => range(12).filter(m => this.monthInfo(y, m).manualOnly).map(m => MESES[m - 1] + '/' + y)) : [];
+
     const authed = s.auth === 'ready' && !!s.session && s.authMode !== 'setpw';
     const mode = s.authMode;
     return {
+      ignQ: s.ignQ, ignOptions, ignChips, hasIgnored: s.ignored.length > 0,
+      ignShowList: s.ignOpen && !!iq, ignNoMatch: ignList.length === 0,
+      ignSummary: !nIgn ? 'Nenhum: os totais incluem todos os prescritores.'
+        : nIgn + (nIgn > 1 ? ' prescritores fora' : ' prescritor fora') + ' do cálculo nas duas abas: totais, KPIs, comparativos mensais e acumulado.',
+      hasIgnWarn: noCut.length > 0,
+      ignWarn: 'Meses lançados só à mão, sem relatório de prescritores, não têm como descontar os ignorados: ' + noCut.join(', ') + '.',
+      onIgnQ: e => this.setState({ ignQ: e.target.value, ignOpen: true, ignHi: 0 }),
+      onIgnFocus: () => this.setState({ ignOpen: true }),
+      onIgnBlur: () => this.setState({ ignOpen: false }),
+      onIgnKey: e => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); this.setState({ ignOpen: true, ignHi: Math.max(0, Math.min(ignList.length - 1, hi + (e.key === 'ArrowDown' ? 1 : -1))) }); }
+        else if (e.key === 'Enter') { e.preventDefault(); if (ignList[hi]) addIgn(ignList[hi].crm); }
+        else if (e.key === 'Escape') this.setState({ ignQ: '', ignOpen: false });
+        else if (e.key === 'Backspace' && !s.ignQ && s.ignored.length) this.setIgnored(l => l.slice(0, -1));
+      },
+      clearIgnored: () => this.setIgnored(() => []),
       tabs: [['prescritores', 'Prescritores'], ['vendas', 'Vendas & Rejeitados']].map(([k, label]) => ({ label, active: s.tab === k, inactive: s.tab !== k, onClick: () => this.setState({ tab: k }, () => this.persist()) })),
       tabPresc: s.tab === 'prescritores', tabVendas: s.tab === 'vendas',
       headerSub: s.tab === 'vendas' ? 'Vendas e rejeições da filial · mensal e acumulado no ano' : 'Orçamentos por prescritor · ano base × ano atual',
@@ -1101,7 +1214,7 @@ class Component extends DCLogic {
       onAnoBase: e => this.setState({ anoBase: +e.target.value, selMonths: null }, () => this.persist()),
       onAnoAtual: e => this.setState({ anoAtual: +e.target.value, selMonths: null }, () => this.persist()),
       onSearch: e => this.setState({ q: e.target.value }),
-      onToggleExcl: () => this.setState({ excluir: !excluir }),
+      onToggleExcl: () => this.setState({ excluir: !excluir }, () => this.persist()),
       openPicker: () => { this.target = null; this.fileRef.current && this.fileRef.current.click(); },
       onFileInput: e => { const f = e.target.files; if (f && f.length) this.handleFiles(f); e.target.value = ''; },
       onDragOver: e => { e.preventDefault(); if (!this.state.drag) this.setState({ drag: true }); },
